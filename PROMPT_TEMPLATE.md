@@ -10,6 +10,19 @@ Hasil uji template ini (3 November 2026, di sandbox Kiro). Semua file diekstrak 
 
 ## Cara pakai
 
+Ada dua mode. Pilih salah satu.
+
+**Mode Cepat (hanya judul).** Kirim dokumen ini dan tulis:
+
+```
+MODE CEPAT
+Judul: {mis. "Sisi Gelap Pinjol"}
+API key ElevenLabs: {sk_...}      (lewati kalau ELEVENLABS_API_KEY sudah di-set di environment)
+```
+
+Semua isian lain ditentukan agent sesuai aturan **2.0**. Agent bekerja sampai PR selesai tanpa berhenti, lalu melaporkan semua keputusan otomatisnya. Isian Bagian 1 tetap bisa ditambahkan untuk menimpa keputusan otomatis, misalnya `Style: neon-tech` atau `Durasi: 30`. Kalau ingin menyetujui naskah dulu, tambahkan baris `Berhenti di naskah: ya`.
+
+**Mode Lengkap.**
 1. Isi **Bagian 1 (Brief)**.
 2. Kirim ke agent **seluruh dokumen ini** (Bagian 1 + 2 + 3) sebagai satu pesan, atau lampirkan file ini dan tulis "Ikuti PROMPT_TEMPLATE.md, ini brief-nya: ...".
 3. Agent akan berhenti dua kali untuk minta persetujuan: setelah naskah, dan setelah preview gambar per adegan.
@@ -61,6 +74,64 @@ OUTPUT
 ---
 
 ## BAGIAN 2 — Instruksi untuk agent
+
+### 2.0 Mode Cepat: aturan isian otomatis
+
+Berlaku kalau user menulis `MODE CEPAT`. Isian yang diberikan user selalu menang atas aturan ini. Isian yang tidak diberikan ditentukan sebagai berikut:
+
+**Yang tetap wajib dari user atau environment:**
+- **API key ElevenLabs.** Ambil dari env `ELEVENLABS_API_KEY` kalau ada. Kalau tidak ada, berhenti dan minta. Hanya ini yang boleh membuat agent berhenti.
+- **Repo.** Pakai repo yang sedang dibuka di workspace. Kalau ada lebih dari satu, pakai yang berisi video atau project sebelumnya.
+
+**Topik dan isi:**
+
+| Isian | Aturan otomatis |
+|---|---|
+| Slug | Dari judul: huruf kecil, tanpa kata sambung (di, ke, dan, yang), spasi jadi `-`, maksimal 4 kata. Contoh: "Sisi Gelap Pinjol" → `sisi-gelap-pinjol`. Kalau folder sudah ada, tambahkan `-2`. |
+| Pesan utama | Satu kalimat yang menjawab "apa yang harus penonton tahu atau lakukan setelah menonton?". |
+| Target penonton | Default: orang Indonesia 18–35 tahun, awam soal topiknya. |
+| Nada | Ikuti style terpilih (lihat tabel style di bawah). |
+| Sumber data | Wajib riset dengan web search. Pakai sumber resmi atau tepercaya (regulator, lembaga negara, jurnal, media besar). Setiap angka di layar diberi sumber singkat (teks kecil). Kalau angka tidak bisa diverifikasi, jangan pakai angka. Pakai pernyataan umum. |
+| Disclaimer | Topik keuangan/investasi: "Konten edukasi, bukan saran keuangan." Kesehatan: "Konten edukasi, bukan pengganti konsultasi dokter." Hukum: "Konten edukasi, bukan nasihat hukum." Lainnya: tanpa disclaimer. Tampil mulai detik ke-(durasi − 4). |
+| CTA | "Kirim ini ke temanmu." Kalau topiknya tips atau cara: "Simpan biar nggak lupa." |
+
+**Format:**
+
+| Isian | Aturan otomatis |
+|---|---|
+| Durasi | 55 detik. Pakai 30 detik kalau judulnya satu fakta atau satu tips saja. |
+| Struktur 55 dtk | hook (0–3 dtk) + 5 poin (masing-masing sekitar 7,5 dtk) + "kalau tetap mau/cara aman" (sekitar 10 dtk, checklist) + outro/CTA (sekitar 4,5 dtk). |
+| Struktur 30 dtk | hook (0–3 dtk) + 3 poin (masing-masing sekitar 7,5 dtk) + outro/CTA (sekitar 4,5 dtk). |
+| Naskah | Buat sendiri sesuai 2.2, sekitar 2,4 kata per detik. Hook berupa angka mengejutkan atau pertanyaan langsung ke penonton. |
+
+**Style (berdasarkan kata di judul/topik):**
+
+| Kata kunci di judul/topik | Style | Voice |
+|---|---|---|
+| sisi gelap, bahaya, waspada, penipuan, scam, jebakan, risiko, ilegal, mitos | `dark-alert` | Liam |
+| AI, teknologi, aplikasi, gadget, crypto, coding, internet, digital | `neon-tech` | Liam |
+| fakta, terbaru, viral, heboh, ternyata, berita, data | `bold-news` | Daniel |
+| kisah, sejarah, asal-usul, biografi, cerita, perjalanan | `editorial-story` | Brian |
+| cara, tips, panduan, belajar, dasar, pemula, hemat, (lainnya) | `clean-explainer` | Sarah |
+
+- Kalau lebih dari satu baris cocok, pakai baris paling atas.
+- Gaya bicara mengikuti style: `dark-alert`/`neon-tech` energik, `bold-news` tegas, `editorial-story` tenang, `clean-explainer` energik.
+- Tidak ada penyesuaian style. Pakai nilai `config.js` apa adanya.
+
+**Thumbnail:**
+
+| Isian | Aturan otomatis |
+|---|---|
+| Judul | Judul video dalam huruf kapital, dipecah jadi 2 baris (maksimal 3) dengan panjang mirip. Kalau judul lebih dari 6 kata, ringkas jadi 3–5 kata inti. |
+| Highlight | Baris yang berisi kata paling spesifik (nama topik), biasanya baris terakhir. |
+| Subjudul | Fakta atau angka paling mengejutkan dari naskah, maksimal 45 karakter. |
+| Badge | `dark-alert`: "WASPADA". `bold-news`: "FAKTA". `neon-tech`: "WAJIB TAHU". `clean-explainer`: "TIPS". `editorial-story`: kosong. |
+| Adegan latar | `bgTime` = detik di adegan poin pertama ketika angka atau visual utamanya sudah tampil penuh. |
+| Varian | A, B, C (9:16) + 16:9. Sebutkan di laporan mana yang direkomendasikan dan alasannya. |
+
+**Output:** `{slug}-vo.mp4`, `{slug}.mp4` (tanpa VO), dan semua thumbnail. Kirim lewat branch baru `video/{slug}` dan PR ke `main`.
+
+**Alur Mode Cepat:** jalankan 2.1 tanpa berhenti di langkah 1 dan 3, kecuali user menulis `Berhenti di naskah: ya`. Pemeriksaan di langkah 3 (OCR still dan thumbnail) tetap wajib, hanya tidak perlu menunggu persetujuan. Laporan akhir (langkah 9) wajib menyertakan tabel **"Keputusan otomatis"**: slug, style + alasan, voice, durasi, struktur, sumber data yang dipakai, isi thumbnail, dan varian yang direkomendasikan. Dengan tabel itu user bisa minta revisi bagian tertentu saja.
 
 ### 2.1 Alur kerja (ikuti berurutan)
 
