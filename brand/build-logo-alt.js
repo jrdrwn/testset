@@ -1,6 +1,6 @@
 // Alternatif logo @wanadiary.id (ikon 1080x1080, semua elemen di dalam lingkaran r≈430 agar aman untuk foto profil bulat).
 // Pemakaian: node brand/build-logo-alt.js   (env CHROME dan PW sama seperti render.js)
-// Output: brand/alternatif/<nama>.svg + .png, dan perbandingan.png (semua opsi berdampingan, termasuk logo sekarang).
+// Output: brand/alternatif/<nama>.svg + .png, dan perbandingan.png (semua opsi berdampingan, termasuk logo lama).
 const fs = require('fs'), path = require('path');
 const DIR = path.join(__dirname, 'alternatif');
 fs.mkdirSync(DIR, { recursive: true });
@@ -30,10 +30,12 @@ const LOGOS = {
 
   // 3. Monogram "wd" dengan garis bawah kuning: seperti kata yang di-highlight di caption video
   'monogram-wd': svg(`
+  <g transform="translate(0,-35)">
   <polyline points="215,445 300,655 385,505 470,655 555,445" fill="none" stroke="${C.light}" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="725" cy="560" r="100" fill="none" stroke="${C.light}" stroke-width="88"/>
   <line x1="825" y1="320" x2="825" y2="655" stroke="${C.light}" stroke-width="88" stroke-linecap="round"/>
-  <rect x="215" y="760" width="610" height="44" rx="22" fill="${C.yellow}"/>`),
+  </g>
+  <rect x="215" y="790" width="610" height="34" rx="17" fill="${C.yellow}"/>`),
 
   // 4. Setengah lingkaran "sisi gelap": separuh terang, separuh menyatu dengan latar; cocok untuk seri "Sisi Gelap ___"
   'sisi-gelap': svg(`
@@ -66,7 +68,7 @@ console.log('svg:', Object.keys(LOGOS).join(', '));
   }
   // perbandingan: tiap opsi sebagai kotak, bulat (foto profil), dan kecil 110 px (ukuran tampil di IG)
   const font = 'file://' + path.join(__dirname, '..', 'forex-dark-side', 'fonts', 'NotoSans-VF.ttf');
-  const opts = [['0 · sekarang', path.join(__dirname, 'logo-dark.svg')], ...Object.keys(LOGOS).map((n, i) => [`${i + 1} · ${n}`, path.join(DIR, n + '.svg')])];
+  const opts = [['0 · w-titik (logo lama)', path.join(DIR, 'w-titik.svg')], ...Object.keys(LOGOS).map((n, i) => [`${i + 1} · ${n}${n === 'monogram-wd' ? ' (dipakai)' : ''}`, path.join(DIR, n + '.svg')])];
   const cell = ([label, f]) => `<div class="c"><div class="row"><img class="sq" src="file://${f}"><img class="ci" src="file://${f}"><img class="sm" src="file://${f}"></div><p>${label}</p></div>`;
   await page.setViewportSize({ width: 1800, height: 1500 });
   const sheet = path.join(DIR, '_sheet.html');

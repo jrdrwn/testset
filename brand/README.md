@@ -2,7 +2,7 @@
 
 ## Logo
 
-**Konsep:** monogram "w" geometris (garis tebal, ujung membulat) dan satu titik merah di kanan atas. Titik merah diambil dari ikon notifikasi, sebagai tanda "ada keresahan yang perlu diperhatikan". Warnanya sama dengan style video `dark-alert`.
+**Konsep:** monogram "wd" (wana diary) dari garis tebal berujung bulat, dengan garis bawah kuning. Garis bawahnya meniru kata yang sedang di-highlight di caption video, jadi logo dan video terasa satu keluarga. Logo lama ("w" + titik merah) disimpan di `alternatif/w-titik.svg`.
 
 | File | Ukuran | Pakai untuk |
 |---|---|---|
@@ -18,14 +18,17 @@
 |---|---|
 | Hitam (latar) | `#06070a` |
 | Putih | `#f4f5f7` |
-| Merah (titik) | `#ff2d4a` |
-| Kuning (aksen caption) | `#ffd60a` |
+| Kuning (garis bawah, aksen caption) | `#ffd60a` |
+| Kuning tua (garis bawah di latar terang) | `#e6b800` |
+| Merah (aksen peringatan di video) | `#ff2d4a` |
 
 **Font wordmark:** Noto Sans ExtraBold (OFL). Font sudah tertanam di SVG sebagai subset kecil (`wordmark-font.woff2`).
 
 **Aturan pakai**
-- Monogram dan titik berada di dalam lingkaran radius 415 dari 540, jadi aman untuk foto profil bulat.
-- Jangan mengubah warna titik merah. Titik itu ciri utama logo.
+- Monogram dan garis bawah berada di dalam lingkaran radius 426 dari 540, jadi aman untuk foto profil bulat.
+- Garis bawah kuning adalah ciri utama logo. Jangan dihapus atau diganti warna lain.
+- Jarak "wd" ke garis bawah jangan dirapatkan. Kalau terlalu dekat, di ukuran kecil "wd" terbaca seperti "PM".
+- "wd" terbaca OCR di ukuran 1080, 320, dan 110 px (ukuran foto profil IG).
 - Untuk membuat ulang atau mengubah warna, edit `C` di `build-logo.js`, lalu jalankan `node brand/build-logo.js`. Env `CHROME` dan `PW` sama seperti di `render.js`.
 
 ## Alternatif logo (`alternatif/`)
@@ -34,10 +37,10 @@
 
 | No | File | Konsep |
 |---|---|---|
-| 0 | `logo-dark.svg` (sekarang) | "w" geometris + titik merah notifikasi |
+| 0 | `alternatif/w-titik` (logo lama) | "w" geometris + titik merah notifikasi |
 | 1 | `alternatif/diary-pita` | buku diary dengan pita pembatas merah |
 | 2 | `alternatif/curhat-seru` | gelembung curhat dengan tanda seru, titiknya merah |
-| 3 | `alternatif/monogram-wd` | huruf "wd" dengan garis bawah kuning, seperti kata yang di-highlight di caption |
+| 3 | `alternatif/monogram-wd` (**dipakai**) | huruf "wd" dengan garis bawah kuning, seperti kata yang di-highlight di caption |
 | 4 | `alternatif/sisi-gelap` | lingkaran setengah terang setengah gelap + titik merah, untuk seri "Sisi Gelap ___" |
 | 5 | `alternatif/halaman-w` | halaman bergaris dengan coretan "w" dan garis margin merah |
 
