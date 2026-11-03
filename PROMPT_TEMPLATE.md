@@ -95,7 +95,7 @@ Berlaku kalau user menulis `MODE CEPAT`. Isian yang diberikan user selalu menang
 | Sumber data | Wajib riset dengan web search. Pakai sumber resmi atau tepercaya (regulator, lembaga negara, jurnal, media besar). Setiap angka di layar diberi sumber singkat (teks kecil). Kalau angka tidak bisa diverifikasi, jangan pakai angka. Pakai pernyataan umum. |
 | Disclaimer | Topik keuangan/investasi: "Konten edukasi, bukan saran keuangan." Kesehatan: "Konten edukasi, bukan pengganti konsultasi dokter." Hukum: "Konten edukasi, bukan nasihat hukum." Lainnya: tanpa disclaimer. Tampil mulai detik ke-(durasi − 4). |
 | CTA | "Kirim ini ke temanmu." Kalau topiknya tips atau cara: "Simpan biar nggak lupa." |
-| Akun brand | `@wanadiary` (`VIDEO.handle`). Tampil otomatis di adegan terakhir dan di semua thumbnail. Tidak perlu diucapkan di VO. |
+| Akun brand | `@wanadiary` (`VIDEO.handle`). Tampil otomatis sebagai watermark samar sepanjang video (`VIDEO.watermark`), sebagai pil di adegan terakhir, dan di semua thumbnail. Tidak perlu diucapkan di VO. |
 | Sudut pandang | Brand @wanadiary membahas **keresahan**: hal yang meresahkan, merugikan, atau jarang dibicarakan. Bingkai topik sebagai keresahan nyata yang dialami penonton, lalu beri jalan keluar yang aman. |
 
 **Format:**
@@ -184,6 +184,7 @@ Berlaku kalau user menulis `MODE CEPAT`. Isian yang diberikan user selalu menang
 - **Font:** `txt(..., {font:'body'})` untuk teks kecil atau sumber, default `head` untuk judul. Teks panjang beri `maxW` agar otomatis mengecil.
 - **Adegan** harus menutup 0..duration tanpa celah. `accent` adegan mewarnai cahaya latar.
 - **Adegan terakhir:** kosongkan area y 1140–1260. Area itu dipakai pil akun brand (`VIDEO.handle`, mis. @wanadiary) yang digambar otomatis oleh `composition.js`.
+- **Watermark:** handle tampil samar (opacity 0,28, ukuran 30 px) di tengah y 1440 dari detik 0 sampai adegan terakhir, lalu memudar saat pil handle muncul. Watermark tidak ikut guncang, glitch, atau transisi. Jangan menaruh elemen adegan di y 1420–1460. Atur lewat `VIDEO.watermark` di `config.js` (`null` = tanpa watermark; opacity 0,2–0,35 masih tidak mengganggu).
 - **EV (SFX)** dalam detik absolut:
   - `boom` [[t,kekuatan]]: dentuman + guncang, untuk hook atau fakta besar.
   - `hit`: pukulan kecil + flash, untuk pergantian poin.
@@ -342,6 +343,7 @@ Contoh `scenes.js` dan `vo/lines.js` di bawah adalah demo 14 detik tentang pinjo
 
 
 
+
 #### File: `config.js`
 
 ````js
@@ -353,6 +355,7 @@ window.VIDEO = {
   disclaimer: 'Konten edukasi, bukan saran keuangan.',
   disclaimerFrom: 11,                   // detik mulai disclaimer tampil (null = tidak tampil)
   handle: '@wanadiary',                 // akun brand: tampil di adegan terakhir + thumbnail ('' = tidak tampil)
+  watermark: { opacity: 0.28, size: 30, y: 1440 }, // handle samar sepanjang video (null = tanpa watermark)
 };
 window.STYLE_ID = 'dark-alert';         // pilih salah satu key di STYLES
 
@@ -886,6 +889,12 @@ function loadExisting() {
     if (fr > 0.005) { main.fillStyle = `rgba(255,20,50,${Math.min(0.5, fr)})`; main.fillRect(0, 0, W, H); }
     if (fade > 0.005) { main.fillStyle = C.bg; main.globalAlpha = fade; main.fillRect(0, 0, W, H); main.globalAlpha = 1; }
     post(main, t);
+    // watermark handle: samar, diam (tidak ikut guncang/glitch), menghilang saat pil handle di adegan terakhir muncul
+    const WM = V.watermark;
+    if (V.handle && WM) {
+      const last = SCENES[SCENES.length - 1], hide = p(t - last.t0, 0.3, 0.6);
+      if (hide < 1) txt(main, V.handle, 540, WM.y, { size: WM.size, font: 'body', color: C.text, alpha: WM.opacity * (1 - hide), ls: 2 });
+    }
   }
 
   // ---------- thumbnail / cover ----------
