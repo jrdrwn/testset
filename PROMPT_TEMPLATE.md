@@ -132,9 +132,11 @@ Berlaku kalau user menulis `MODE CEPAT`. Isian yang diberikan user selalu menang
 | Adegan latar | `bgTime` = detik di adegan poin pertama ketika angka atau visual utamanya sudah tampil penuh. |
 | Varian | A, B, C (9:16) + 16:9. Sebutkan di laporan mana yang direkomendasikan dan alasannya. |
 
-**Output:** `{slug}-vo.mp4`, `{slug}.mp4` (tanpa VO), dan semua thumbnail. Kirim lewat branch baru `video/{slug}` dan PR ke `main`.
+**Caption upload:** semua bagian 2.9 dibuat (3 opsi Instagram, TikTok, judul dan deskripsi YouTube Shorts, komentar tersemat, alt text). Opsi rekomendasi = opsi 1 (angka mengejutkan) kalau naskah punya angka kuat. Kalau tidak, opsi 3 (keresahan sehari-hari).
 
-**Alur Mode Cepat:** jalankan 2.1 tanpa berhenti di langkah 1 dan 3, kecuali user menulis `Berhenti di naskah: ya`. Pemeriksaan di langkah 3 (OCR still dan thumbnail) tetap wajib, hanya tidak perlu menunggu persetujuan. Laporan akhir (langkah 9) wajib menyertakan tabel **"Keputusan otomatis"**: slug, style + alasan, voice, durasi, struktur, sumber data yang dipakai, isi thumbnail, dan varian yang direkomendasikan. Dengan tabel itu user bisa minta revisi bagian tertentu saja.
+**Output:** `{slug}-vo.mp4`, `{slug}.mp4` (tanpa VO), semua thumbnail, dan `{slug}-caption.md`. Kirim lewat branch baru `video/{slug}` dan PR ke `main`.
+
+**Alur Mode Cepat:** jalankan 2.1 tanpa berhenti di langkah 1 dan 3, kecuali user menulis `Berhenti di naskah: ya`. Pemeriksaan di langkah 3 (OCR still dan thumbnail) tetap wajib, hanya tidak perlu menunggu persetujuan. Laporan akhir (langkah 10) wajib menyertakan tabel **"Keputusan otomatis"**: slug, style + alasan, voice, durasi, struktur, sumber data yang dipakai, isi thumbnail, dan varian yang direkomendasikan. Dengan tabel itu user bisa minta revisi bagian tertentu saja.
 
 ### 2.1 Alur kerja (ikuti berurutan)
 
@@ -148,8 +150,15 @@ Berlaku kalau user menulis `MODE CEPAT`. Isian yang diberikan user selalu menang
 5. **Render.** Jalankan `node render.js mp4`. Kalau brief minta versi tanpa VO, jalankan juga `NOVO=1 node render.js mp4`.
 6. **Thumbnail.** Jalankan `node render.js thumb`.
 7. **Verifikasi.** Jalankan `python tools/verify.py out/{slug}-vo.mp4`. Harus "LULUS". Kalau ada saran `ONLY=...`, buat ulang baris itu, lalu render dan verifikasi ulang.
-8. **Kirim.** Salin `out/{slug}-vo.mp4`, `out/{slug}.mp4` (jika ada), dan `out/thumb-*.jpg` ke root repo. Commit `{slug}/` (tanpa `out/` dan `previews/`) ke branch baru, lalu buka PR ke `main`.
-9. **Laporan ke user.** Isinya: link PR, angka hasil verify (cocok %, median, maks, OCR %), kecepatan per baris yang dinaikkan, perbedaan naskah ucapan vs caption, dan hal yang tidak bisa dicek (agent tidak bisa menonton/mendengar).
+8. **Caption upload.** Tulis `out/{slug}-caption.md` sesuai 2.9, lalu jalankan `node tools/check-caption.js out/{slug}-caption.md`. Harus "LULUS".
+9. **Kirim.** Salin `out/{slug}-vo.mp4`, `out/{slug}.mp4` (jika ada), `out/thumb-*.jpg`, dan `out/{slug}-caption.md` ke root repo. Commit `{slug}/` (tanpa `out/` dan `previews/`) ke branch baru, lalu buka PR ke `main`.
+10. **Laporan ke user.** Isinya:
+    - link PR
+    - angka hasil verify (cocok %, median, maks, OCR %)
+    - kecepatan per baris yang dinaikkan
+    - perbedaan naskah ucapan vs caption
+    - **caption Instagram yang direkomendasikan, ditempel langsung di chat** supaya bisa langsung disalin
+    - hal yang tidak bisa dicek (agent tidak bisa menonton/mendengar)
 
 ### 2.2 Aturan naskah dan `vo/lines.js`
 
@@ -300,7 +309,104 @@ for f in sys.argv[1:]:
     print(f, [(t, int(min(p[1] for p in b)), 'EDGE' if min(p[0] for p in b) < 8 or max(p[0] for p in b) > w - 8 else '') for b, t, _ in res or []])
 ```
 
-### 2.9 Masalah yang pernah terjadi dan solusinya
+### 2.9 Caption upload (`out/{slug}-caption.md`)
+
+Tujuannya: setelah video jadi, user tinggal menyalin caption dan langsung upload.
+
+**Batas platform** (dicek Nov 2026; `tools/check-caption.js` memakai angka ini):
+
+| Platform | Batas teks | Hashtag | Terpotong "lainnya" |
+|---|---|---|---|
+| Instagram Reels | 2.200 karakter | **maksimal 5** (dibatasi Instagram sejak Des 2025) | sekitar 125 karakter pertama |
+| TikTok | 2.200 karakter (aman untuk app dan penjadwal) | 3–5 disarankan | sekitar 100 karakter pertama |
+| YouTube Shorts judul | 100 karakter | 0–2 (`#shorts` boleh) | — |
+| YouTube Shorts deskripsi | 5.000 karakter | 1–5 | — |
+
+Batas ini bisa berubah. Kalau ada web search, cek ulang sebelum menulis.
+
+**Aturan isi:**
+- **Baris pertama = hook**, berdiri sendiri, dan muat sebelum terpotong. Ambil dari angka atau fakta paling mengejutkan di naskah. Jangan menyalin hook video kata per kata.
+- **Isi:** 3–5 poin dari naskah (pakai `•`), lalu bagian "kalau tetap mau coba / cara aman" dalam 1 kalimat.
+- **CTA:** satu ajakan saja, sesuai jenis konten:
+  - kirim ke teman (peringatan)
+  - simpan (tips)
+  - cerita di komentar (pengalaman)
+- **Disclaimer dan sumber data** ditulis sama dengan di video.
+- **Hashtag** di baris terakhir, maksimal 5. Komposisinya: 2 topik spesifik (mis. `#forex #tradingforex`), 2 kategori (mis. `#literasikeuangan #edukasikeuangan`), dan 1 brand (`#wanadiary`). Jangan pakai hashtag umum seperti `#fyp` atau `#viral`.
+- **Emoji:** maksimal 3 untuk seluruh caption, dan tidak di tengah kalimat.
+- **Bahasa:** sehari-hari, sapaan "kamu", tanpa huruf kapital semua.
+- **YouTube deskripsi** wajib memuat timestamp per adegan (`0:00 ...`) dari `SCENES[].t0`. Akhiri dengan "Follow @wanadiary untuk keresahan lainnya."
+- **Komentar tersemat:** satu pertanyaan yang mengundang cerita, maksimal 300 karakter, tanpa hashtag.
+- **Alt text:** deskripsi visual video dalam 1–2 kalimat untuk aksesibilitas, tanpa hashtag.
+- **Cover:** tulis nama file thumbnail yang direkomendasikan beserta alasannya. Kalau tidak ada file thumbnail, tulis detik frame cover terbaik.
+
+**Format file** (judul bagian `##` harus memuat kata kunci platform, dan isi siap tempel ada di dalam blok kode):
+
+````markdown
+# Caption upload: {Judul}
+
+Video: `{slug}-vo.mp4` ({durasi} dtk, 9:16) · Akun: @wanadiary
+**Cover:** `thumb-A-916.jpg` ({alasan})
+
+## Instagram — Opsi 1 (angka mengejutkan, rekomendasi)
+```
+{hook ≤125 karakter}
+
+{isi + poin}
+
+{CTA}
+
+{disclaimer}
+{sumber data}
+
+#topik1 #topik2 #kategori1 #kategori2 #wanadiary
+```
+
+## Instagram — Opsi 2 (pertanyaan langsung)
+```
+...
+```
+
+## Instagram — Opsi 3 (keresahan sehari-hari)
+```
+...
+```
+
+## TikTok
+```
+{hook ≤100 karakter}
+{2 kalimat isi}
+{disclaimer singkat}
+#... (maks 5)
+```
+
+## YouTube Shorts — Judul
+```
+{≤100 karakter} #shorts
+```
+
+## YouTube Shorts — Deskripsi
+```
+{2 kalimat}
+Isi video:
+0:00 ...
+{sumber, disclaimer}
+Follow @wanadiary untuk keresahan lainnya.
+#... (maks 5)
+```
+
+## Komentar tersemat (semua platform)
+```
+{1 pertanyaan}
+```
+
+## Alt text (Instagram, Pengaturan lanjutan)
+```
+{deskripsi visual}
+```
+````
+
+### 2.10 Masalah yang pernah terjadi dan solusinya
 
 | Gejala | Penyebab | Solusi |
 |---|---|---|
@@ -336,10 +442,12 @@ Buat struktur ini, lalu isi setiap file **persis** seperti blok di bawahnya:
   index.html
   tools/fonts.js
   tools/verify.py
+  tools/check-caption.js
   fonts/HEAD.ttf, fonts/BODY.ttf   <- dihasilkan tools/fonts.js
 ```
 
 Contoh `scenes.js` dan `vo/lines.js` di bawah adalah demo 14 detik tentang pinjol. Demo ini dipakai saat menguji template. Pakai sebagai pola, lalu ganti seluruh isinya untuk topik baru.
+
 
 
 
@@ -1408,6 +1516,50 @@ if not th or any(os.path.getsize(x) > 2 * 1024 * 1024 for x in th): fail.append(
 
 print("HASIL:", "LULUS" if not fail else "GAGAL " + ", ".join(fail))
 sys.exit(1 if fail else 0)
+````
+
+#### File: `tools/check-caption.js`
+
+````js
+// Cek file caption upload (<slug>-caption.md) terhadap batas tiap platform.
+// Pemakaian: node tools/check-caption.js out/<slug>-caption.md
+// Format file: tiap bagian diawali "## <Platform> ..." lalu satu blok ``` berisi teks siap tempel.
+// Platform dikenali dari judul bagian: Instagram, TikTok, YouTube Judul, YouTube Deskripsi, Komentar, Alt text.
+const fs = require('fs');
+const md = fs.readFileSync(process.argv[2], 'utf8');
+// urutan penting: aturan yang lebih spesifik dicek dulu
+// Sumber batas (Nov 2026): Instagram maks 5 hashtag per post/Reel sejak Des 2025, caption 2.200; TikTok 2.200 lewat API (4.000 di app);
+// YouTube judul 100, deskripsi 5.000. Baris pertama dipotong "lainnya" sekitar 125 (IG) / 100 (TikTok) karakter.
+const RULES = [
+  { key: /alt text/i, name: 'Alt text', max: 1000, tags: [0, 0] },
+  { key: /komentar/i, name: 'Komentar tersemat', max: 300, tags: [0, 0] },
+  { key: /youtube.*judul/i, name: 'YouTube judul', max: 100, tags: [0, 2] },
+  { key: /youtube.*deskripsi/i, name: 'YouTube deskripsi', max: 5000, tags: [1, 5] },
+  { key: /tiktok/i, name: 'TikTok', max: 2200, tags: [1, 5], first: 100 },
+  { key: /instagram/i, name: 'Instagram', max: 2200, tags: [1, 5], first: 125 },
+];
+const len = s => [...s].length; // hitung emoji sebagai 1 karakter
+const sections = md.split(/\n(?=## )/).filter(s => s.startsWith('## '));
+let fail = 0, seen = new Set();
+for (const s of sections) {
+  const title = s.split('\n')[0].slice(3).trim();
+  const block = (s.match(/```[a-z]*\n([\s\S]*?)\n```/) || [])[1];
+  const rule = RULES.find(r => r.key.test(title));
+  if (!rule || block == null) continue;
+  seen.add(rule.name);
+  const n = len(block), tags = (block.match(/(^|\s)#[\p{L}\p{N}_]+/gu) || []).length;
+  const firstLine = block.split('\n')[0], fl = len(firstLine);
+  const errs = [];
+  if (n > rule.max) errs.push(`panjang ${n} > ${rule.max}`);
+  if (tags < rule.tags[0] || tags > rule.tags[1]) errs.push(`hashtag ${tags} (harus ${rule.tags[0]}–${rule.tags[1]})`);
+  if (rule.first && fl > rule.first) errs.push(`baris pertama ${fl} > ${rule.first} (terpotong "lainnya")`);
+  if (/\{|\}/.test(block)) errs.push('masih ada placeholder {…}');
+  console.log(`${errs.length ? 'GAGAL' : 'ok   '}  ${title}: ${n} karakter, ${tags} hashtag${rule.first ? `, baris pertama ${fl}` : ''}${errs.length ? '  -> ' + errs.join('; ') : ''}`);
+  if (errs.length) fail++;
+}
+for (const need of ['Instagram', 'TikTok', 'YouTube judul', 'YouTube deskripsi']) if (!seen.has(need)) { console.log(`GAGAL  bagian "${need}" tidak ditemukan`); fail++; }
+console.log(fail ? `HASIL: GAGAL (${fail})` : 'HASIL: LULUS');
+process.exit(fail ? 1 : 0);
 ````
 
 #### File: `.gitignore`
