@@ -22,6 +22,8 @@ API key ElevenLabs: {sk_...}      (lewati kalau ELEVENLABS_API_KEY sudah di-set 
 
 Semua isian lain ditentukan agent sesuai aturan **2.0**. Agent bekerja sampai PR selesai tanpa berhenti, lalu melaporkan semua keputusan otomatisnya. Isian Bagian 1 tetap bisa ditambahkan untuk menimpa keputusan otomatis, misalnya `Style: neon-tech` atau `Durasi: 30`. Kalau ingin menyetujui naskah dulu, tambahkan baris `Berhenti di naskah: ya`.
 
+**Lewat GitHub Actions (tanpa chat).** Di repo ini: tab Actions → "Buat video" → Run workflow → isi judul. Workflow menjalankan Mode Cepat dengan Kiro CLI headless dan membuka PR berisi hasilnya. Panduannya ada di `.github/video/README.md`.
+
 **Mode Lengkap.**
 1. Isi **Bagian 1 (Brief)**.
 2. Kirim ke agent **seluruh dokumen ini** (Bagian 1 + 2 + 3) sebagai satu pesan, atau lampirkan file ini dan tulis "Ikuti PROMPT_TEMPLATE.md, ini brief-nya: ...".
