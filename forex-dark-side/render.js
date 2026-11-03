@@ -10,8 +10,19 @@ const CHROME = process.env.CHROME || '/inner_container/opt/playwright/chromium-1
   page.on('pageerror', e => console.log('[pageerror]', e.message));
   await page.goto('file://' + path.join(__dirname, 'index.html'));
   await page.evaluate(() => document.fonts.load('900 40px NS'));
-  const out = path.join(__dirname, mode === 'mp4' ? 'out' : 'previews');
-  if (mode === 'stills') {
+  const out = path.join(__dirname, mode === 'stills' ? 'previews' : 'out');
+  fs.mkdirSync(out, { recursive: true });
+  if (mode === 'thumb') {
+    // out/thumb-A|B|C-916.jpg (1080x1920 cover Reels/TikTok/Shorts) + out/thumb-169.jpg (1280x720 YouTube)
+    for (const [v, w, h, name] of [['A', 1080, 1920, 'thumb-A-916'], ['B', 1080, 1920, 'thumb-B-916'], ['C', 1080, 1920, 'thumb-C-916'], ['A', 1280, 720, 'thumb-169']]) {
+      const data = await page.evaluate(([v, w, h]) => {
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        COMP.renderThumb(c.getContext('2d'), v); return c.toDataURL('image/jpeg', 0.9);
+      }, [v, w, h]);
+      const f = path.join(out, name + '.jpg');
+      fs.writeFileSync(f, Buffer.from(data.split(',')[1], 'base64')); console.log(f);
+    }
+  } else if (mode === 'stills') {
     for (const t of arg.split(',').map(Number)) {
       const data = await page.evaluate(t => { const c = document.getElementById('c'); COMP.render(c.getContext('2d'), t); return c.toDataURL('image/jpeg', 0.8); }, t);
       const f = path.join(out, `t${t.toFixed(2).padStart(5, '0')}.jpg`);

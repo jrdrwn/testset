@@ -2,7 +2,8 @@
 
 Video: `sisi-gelap-forex-vo.mp4` (55 dtk, 9:16) · Akun: @wanadiary.id
 
-**Cover:** pilih frame di detik ±1,6, saat tulisan "7 DARI 10 · AKUN TRADER RETAIL · RUGI." tampil penuh. Video ini belum punya file thumbnail terpisah.
+**Cover:** `sisi-gelap-forex-thumb-A-916.jpg` (rekomendasi). Judul "SISI GELAP / TRADING FOREX" di tengah, jadi tetap utuh saat grid profil IG memotong cover ke 3:4. Subjudulnya "7 dari 10 akun trader retail rugi" sama dengan hook caption yang dipilih.
+Varian lain: `thumb-B-916.jpg` (judul di atas, badge WASPADA besar), `thumb-C-916.jpg` (judul di bawah), `thumb-169.jpg` (YouTube 1280×720).
 
 Pilih satu opsi Instagram. Caption TikTok dan YouTube Shorts sudah disesuaikan dengan batas platformnya masing-masing (Instagram maksimal 5 hashtag sejak Desember 2025). Salin isi blok kode apa adanya.
 
