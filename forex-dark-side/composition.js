@@ -477,7 +477,28 @@
     if (k2 > 0) txt(c, 'PINTAS KAYA.', 540, 875, { size: 145, weight: 900, color: C.yellow, scale: lerp(2, 1, eOut(k2)), alpha: clamp(k2 * 3), glow: 'rgba(255,214,10,.6)', blur: 35, stroke: '#000', sw: 12 });
     txt(c, 'Belajar dulu. Jangan cuma coba-coba.', 540, 1025, { size: 44, weight: 700, color: '#d5d9e2', alpha: p(lt, 1.3, 1.6) });
     txt(c, 'Konten edukasi, bukan ajakan atau saran investasi.', 540, 1225, { size: 26, weight: 500, color: C.grey, alpha: p(lt, 1.6, 1.9) });
+    drawHandle(c, 540, 1125, p(lt, 0.5, 0.8));
     c.restore();
+  }
+
+  // ---------- brand handle ----------
+  const HANDLE = '@wanadiary';
+  // pil handle di outro; k = progres muncul
+  function drawHandle(c, x, y, k) {
+    if (k <= 0) return;
+    const a = eOut(k);
+    c.save(); c.globalAlpha *= a;
+    c.font = '700 40px NS';
+    const w = c.measureText(HANDLE).width + 64, h = 68;
+    rrect(c, x - w / 2, y - h / 2 + (1 - a) * 20, w, h, h / 2, C.panel, C.red, 3);
+    c.restore();
+    txt(c, HANDLE, x, y + 2 + (1 - a) * 20, { size: 40, weight: 700, color: C.white, alpha: a });
+  }
+  // watermark samar sepanjang video; memudar saat pil outro tampil, kembali saat outro memudar ke loop
+  function drawWatermark(main, t) {
+    const out = SCENES.find(s => s.id === 'outro'), lt = t - out.t0;
+    const hide = lt >= 0 ? p(lt, 0.5, 0.8) * (1 - p(lt, 2.9, 3.4)) : 0;
+    if (hide < 1) txt(main, HANDLE, 540, 1440, { size: 30, weight: 700, ls: 2, color: C.white, alpha: 0.28 * (1 - hide) });
   }
 
   // ---------- captions ----------
@@ -574,6 +595,7 @@
     main.fillStyle = vg; main.fillRect(0, 0, W, H);
     main.save(); main.globalAlpha = 0.06; main.globalCompositeOperation = 'overlay';
     main.drawImage(noise[Math.floor(t * FPS) % 4], 0, 0, W, H); main.restore();
+    drawWatermark(main, t);
   }
 
   // ---------- audio (deterministic synthesis, 48 kHz stereo) ----------
