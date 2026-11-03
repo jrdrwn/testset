@@ -1,6 +1,19 @@
 // Usage: node render.js stills 0.3,1.6,...   |   node render.js mp4
-const path = require('path'), fs = require('fs');
+const path = require('path'), fs = require('fs'), { execFileSync } = require('child_process');
 const { chromium } = require(process.env.PW || 'playwright-core');
+
+// MP4 dari browser berisi audio Opus; TikTok menolaknya ("encode error"). Encode ulang ke format upload standar:
+// H.264 High@4.1 yuv420p 30 fps CFR, GOP 2 dtk, AAC-LC 192 kbps 44,1 kHz stereo, moov di depan (faststart). Butuh env FFMPEG.
+function finalize(raw, final) {
+  const FF = process.env.FFMPEG;
+  if (!FF) throw new Error('FFMPEG belum di-set: file tanpa finalisasi (audio Opus) akan ditolak TikTok.');
+  execFileSync(FF, ['-y', '-loglevel', 'error', '-i', raw,
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-maxrate', '15M', '-bufsize', '30M',
+    '-profile:v', 'high', '-level', '4.1', '-pix_fmt', 'yuv420p', '-r', '30', '-g', '60',
+    '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '2',
+    '-movflags', '+faststart', '-brand', 'mp42', final]);
+  fs.unlinkSync(raw);
+}
 const CHROME = process.env.CHROME || '/inner_container/opt/playwright/chromium-1232/chrome-linux64/chrome';
 (async () => {
   const [mode, arg] = process.argv.slice(2);
@@ -42,7 +55,9 @@ const CHROME = process.env.CHROME || '/inner_container/opt/playwright/chromium-1
       return chunks;
     });
     const f = path.join(out, process.env.OUT || 'sisi-gelap-forex.mp4');
-    fs.writeFileSync(f, Buffer.concat(parts.map(p => Buffer.from(p, 'base64'))));
+    const raw = f.replace(/\.mp4$/, '.raw.mp4');
+    fs.writeFileSync(raw, Buffer.concat(parts.map(p => Buffer.from(p, 'base64'))));
+    finalize(raw, f);
     console.log('wrote', f, fs.statSync(f).size);
   }
   await b.close();

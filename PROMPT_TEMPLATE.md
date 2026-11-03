@@ -275,7 +275,7 @@ python -m venv .venv
 mkdir -p .work/home
 
 # set di setiap command (env tidak bertahan antar command)
-export FFMPEG=$(./.venv/bin/python -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())")
+export FFMPEG=$(./.venv/bin/python -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())")   # WAJIB: render.js memakainya untuk H.264+AAC
 export HOME=$PWD/.work/home XDG_CONFIG_HOME=$PWD/.work/home XDG_CACHE_HOME=$PWD/.work/home TMPDIR=$PWD/.work/home
 export CHROME=/inner_container/opt/playwright/chromium-1232/chrome-linux64/chrome
 export PW=/inner_container/opt/toolchains/.nvm/versions/node/v22.23.4/lib/node_modules/@playwright/mcp/node_modules/playwright-core
@@ -293,7 +293,7 @@ node tools/fonts.js                     # unduh font sesuai STYLE_ID (ulang seti
 
 `tools/verify.py` memeriksa langkah 1–5 berikut. Ambang lulusnya:
 
-1. **Stream:** 1080×1920, ada audio, durasi = `duration` ±0,05 dtk.
+1. **Stream dan format upload:** 1080×1920, durasi = `duration` ±0,05 dtk, **video H.264 + audio AAC + moov di depan (faststart)**, tanpa error decode. File langsung dari browser berisi audio Opus dan **ditolak TikTok** ("encode error"), jadi `render.js` selalu meng-encode ulang lewat ffmpeg (fungsi `finalize`).
 2. **Transkripsi Scribe:** semua kalimat naskah terbaca. Tidak ada kata di luar naskah seperti "eh" atau napas. Kalau ada, buat ulang baris itu dengan `ONLY=n`.
 3. **Sinkron caption:** ≥ 90% kata cocok, selisih median ≤ 0,05 dtk, maksimal ≤ 0,15 dtk.
 4. **OCR caption:** ≥ 85% kata terlihat saat diucapkan. Kata 2–3 huruf sering gagal dibaca OCR, dan itu wajar.
@@ -410,6 +410,7 @@ Follow @wanadiary.id untuk keresahan lainnya.
 
 | Gejala | Penyebab | Solusi |
 |---|---|---|
+| Upload TikTok gagal "encode error" / IG memproses lama | MP4 dari browser memakai audio Opus | render lewat `render.js` dengan env `FFMPEG` (otomatis jadi H.264 + AAC + faststart). Untuk file lama: `$FFMPEG -i in.mp4 -c:v libx264 -crf 17 -profile:v high -level 4.1 -pix_fmt yuv420p -r 30 -g 60 -c:a aac -b:a 192k -ar 44100 -movflags +faststart out.mp4` |
 | `missing the permission voices_read` / `user_read` | izin API key kurang | tambah izin di ElevenLabs → Settings → API Keys |
 | `API key ID used as API key` | yang dikirim key ID (64 hex) | pakai nilai `sk_...` yang muncul saat key dibuat |
 | Chromium `chrome_crashpad_handler: --database is required` | HOME read-only | set HOME/XDG_*/TMPDIR ke folder yang bisa ditulis |
@@ -447,6 +448,7 @@ Buat struktur ini, lalu isi setiap file **persis** seperti blok di bawahnya:
 ```
 
 Contoh `scenes.js` dan `vo/lines.js` di bawah adalah demo 14 detik tentang pinjol. Demo ini dipakai saat menguji template. Pakai sebagai pola, lalu ganti seluruh isinya untuk topik baru.
+
 
 
 
@@ -1297,9 +1299,24 @@ async function exportMP4(ctx, log = () => {}) {
 //   node render.js stills 0.5,3.2,8        -> previews/tXX.XX.jpg (cek visual per detik)
 //   node render.js thumb                   -> out/thumb-<varian>-916.jpg (1080x1920) dan -169.jpg (1280x720)
 // Env: CHROME (path chrome), PW (path modul playwright-core), BITRATE, NOVO=1.
-const path = require('path'), fs = require('fs');
+// Env tambahan: FFMPEG (WAJIB untuk mp4) -> hasil akhir di-encode ulang ke H.264 + AAC agar diterima TikTok/IG/YouTube.
+const path = require('path'), fs = require('fs'), { execFileSync } = require('child_process');
 const { chromium } = require(process.env.PW || 'playwright-core');
 const CHROME = process.env.CHROME || '/inner_container/opt/playwright/chromium-1232/chrome-linux64/chrome';
+
+// MP4 dari browser berisi audio Opus; TikTok menolaknya ("encode error"). Encode ulang ke format upload standar:
+// H.264 High@4.1 yuv420p 30 fps CFR, GOP 2 dtk, AAC-LC 192 kbps 44,1 kHz stereo, moov di depan (faststart).
+function finalize(raw, final) {
+  const FF = process.env.FFMPEG;
+  if (!FF) throw new Error('FFMPEG belum di-set: file tanpa finalisasi (audio Opus) akan ditolak TikTok. Lihat setup 2.7.');
+  execFileSync(FF, ['-y', '-loglevel', 'error', '-i', raw,
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-maxrate', '15M', '-bufsize', '30M',
+    '-profile:v', 'high', '-level', '4.1', '-pix_fmt', 'yuv420p', '-r', '30', '-g', '60',
+    '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '2',
+    '-movflags', '+faststart', '-brand', 'mp42', final]);
+  fs.unlinkSync(raw);
+}
+
 (async () => {
   const [mode, arg] = process.argv.slice(2);
   const b = await chromium.launch({ executablePath: CHROME, chromiumSandbox: false, args: ['--disable-crash-reporter', '--disable-breakpad', '--no-zygote', '--disable-dev-shm-usage'] });
@@ -1343,7 +1360,9 @@ const CHROME = process.env.CHROME || '/inner_container/opt/playwright/chromium-1
       return chunks;
     });
     const f = path.join(outDir, process.env.OUT || `${slug}${process.env.NOVO ? '' : '-vo'}.mp4`);
-    fs.writeFileSync(f, Buffer.concat(parts.map(p => Buffer.from(p, 'base64'))));
+    const raw = f.replace(/\.mp4$/, '.raw.mp4');
+    fs.writeFileSync(raw, Buffer.concat(parts.map(p => Buffer.from(p, 'base64'))));
+    finalize(raw, f);
     console.log('wrote', f, fs.statSync(f).size);
   } else { console.log('mode: mp4 | stills <t,..> | thumb'); }
   await b.close();
@@ -1459,9 +1478,18 @@ dur = re.search(r"Duration: (\d+):(\d+):([\d.]+)", info)
 dur = int(dur[1]) * 3600 + int(dur[2]) * 60 + float(dur[3])
 res = re.search(r"Video: .*?(\d{3,4})x(\d{3,4})", info)
 has_audio = "Audio:" in info
-print(f"[1] durasi {dur:.2f}s, resolusi {res[1]}x{res[2]}, audio {'ada' if has_audio else 'TIDAK ADA'}")
+vcodec = (re.search(r"Video: (\w+)", info) or [None, "?"])[1]
+acodec = (re.search(r"Audio: (\w+)", info) or [None, "?"])[1]
+faststart = open(mp4, "rb").read(4096).find(b"moov") != -1
+print(f"[1] durasi {dur:.2f}s, resolusi {res[1]}x{res[2]}, video {vcodec}, audio {acodec}, moov di depan: {'ya' if faststart else 'TIDAK'}")
 if (res[1], res[2]) != ("1080", "1920") or not has_audio:
     fail.append("stream")
+if vcodec != "h264" or acodec != "aac" or not faststart:  # TikTok menolak audio Opus ("encode error")
+    print("     format upload salah: harus H.264 + AAC + faststart (render.js finalize, butuh env FFMPEG)")
+    fail.append("format")
+derr = subprocess.run([FF, "-v", "error", "-i", mp4, "-f", "null", "-"], capture_output=True, text=True).stderr.strip()
+if derr:
+    print("     error decode:", derr[:300]); fail.append("decode")
 
 # 2+3) STT
 tmp = tempfile.mkdtemp()
