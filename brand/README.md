@@ -28,6 +28,21 @@
 - Jangan mengubah warna titik merah. Titik itu ciri utama logo.
 - Untuk membuat ulang atau mengubah warna, edit `C` di `build-logo.js`, lalu jalankan `node brand/build-logo.js`. Env `CHROME` dan `PW` sama seperti di `render.js`.
 
+## Alternatif logo (`alternatif/`)
+
+`alternatif/perbandingan.png` menampilkan semua opsi berdampingan dalam tiga bentuk: kotak, bulat (foto profil), dan kecil 110 px (ukuran tampil di IG).
+
+| No | File | Konsep |
+|---|---|---|
+| 0 | `logo-dark.svg` (sekarang) | "w" geometris + titik merah notifikasi |
+| 1 | `alternatif/diary-pita` | buku diary dengan pita pembatas merah |
+| 2 | `alternatif/curhat-seru` | gelembung curhat dengan tanda seru, titiknya merah |
+| 3 | `alternatif/monogram-wd` | huruf "wd" dengan garis bawah kuning, seperti kata yang di-highlight di caption |
+| 4 | `alternatif/sisi-gelap` | lingkaran setengah terang setengah gelap + titik merah, untuk seri "Sisi Gelap ___" |
+| 5 | `alternatif/halaman-w` | halaman bergaris dengan coretan "w" dan garis margin merah |
+
+Semua opsi aman untuk foto profil bulat (elemen terjauh 365–418 px dari tengah, batas aman 460). Buat ulang dengan `node brand/build-logo-alt.js`.
+
 ## Profil Instagram
 
 **Nama** (kolom ini ikut terbaca di pencarian, 27/64 karakter):
