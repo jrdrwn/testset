@@ -106,9 +106,13 @@
     kick: [3, 51.5, 0.6],
   };
   const CAPTIONS = window.VO_LINES.map((ln, li) => {
-    const words = ln.cap.split(' '), vd = (window.VO_DATA && window.VO_DATA[li]) ? window.VO_DATA[li].dur : (ln.t1 - ln.t0) * 0.85;
+    const vo = window.VO_DATA && window.VO_DATA[li];
+    const words = ln.cap.split(' '), vd = vo ? vo.dur : (ln.t1 - ln.t0) * 0.85;
     const total = ln.cap.length; let acc = 0;
-    const times = words.map(w => { const tt = ln.t0 + (acc / total) * vd; acc += w.length + 1; return tt; });
+    // word timings from the voice (ElevenLabs alignment) when available, else spread by character count
+    const times = vo && vo.wt && vo.wt.length === words.length
+      ? vo.wt.map(x => ln.t0 + x)
+      : words.map(w => { const tt = ln.t0 + (acc / total) * vd; acc += w.length + 1; return tt; });
     const groups = []; let g = [];
     words.forEach((w, i) => { g.push(i); if (g.length === 3 || /[.,?:!]$/.test(w)) { groups.push(g); g = []; } });
     if (g.length) groups.push(g);
@@ -636,8 +640,13 @@
           act[s0 + j] = 1;
         }
       });
+      // smoothing low-pass only for the low-rate espeak voice; full-band TTS passes through
+      const smooth = window.VO_DATA.some(d => d && d.sr <= 16000);
       let lp1 = 0, lp2 = 0, peak = 1e-6;
-      for (let i = 0; i < N; i++) { lp1 += 0.55 * (V[i] - lp1); lp2 += 0.55 * (lp1 - lp2); V[i] = lp2; peak = Math.max(peak, Math.abs(lp2)); }
+      for (let i = 0; i < N; i++) {
+        if (smooth) { lp1 += 0.55 * (V[i] - lp1); lp2 += 0.55 * (lp1 - lp2); V[i] = lp2; }
+        peak = Math.max(peak, Math.abs(V[i]));
+      }
       const vg = 0.95 / peak; let duck = 1;
       for (let i = 0; i < N; i++) {
         const target = act[Math.min(N - 1, i + Math.floor(sr * 0.04))] ? 0.38 : 1;
