@@ -40,6 +40,7 @@ TOPIK & TUJUAN
 - Nada                 : {tegas & memperingatkan | santai & ramah | serius & berita | bercerita}
 - CTA penutup          : {mis. "Kirim ini ke temanmu."}
 - Disclaimer di layar  : {mis. "Konten edukasi, bukan saran keuangan." | tidak ada}
+- Akun brand           : {default @wanadiary | handle lain | tidak ada}
 - Sumber data/angka    : {tautan/sumber; atau "cari sendiri dan cantumkan sumbernya"}
 
 FORMAT
@@ -94,6 +95,8 @@ Berlaku kalau user menulis `MODE CEPAT`. Isian yang diberikan user selalu menang
 | Sumber data | Wajib riset dengan web search. Pakai sumber resmi atau tepercaya (regulator, lembaga negara, jurnal, media besar). Setiap angka di layar diberi sumber singkat (teks kecil). Kalau angka tidak bisa diverifikasi, jangan pakai angka. Pakai pernyataan umum. |
 | Disclaimer | Topik keuangan/investasi: "Konten edukasi, bukan saran keuangan." Kesehatan: "Konten edukasi, bukan pengganti konsultasi dokter." Hukum: "Konten edukasi, bukan nasihat hukum." Lainnya: tanpa disclaimer. Tampil mulai detik ke-(durasi − 4). |
 | CTA | "Kirim ini ke temanmu." Kalau topiknya tips atau cara: "Simpan biar nggak lupa." |
+| Akun brand | `@wanadiary` (`VIDEO.handle`). Tampil otomatis di adegan terakhir dan di semua thumbnail. Tidak perlu diucapkan di VO. |
+| Sudut pandang | Brand @wanadiary membahas **keresahan**: hal yang meresahkan, merugikan, atau jarang dibicarakan. Bingkai topik sebagai keresahan nyata yang dialami penonton, lalu beri jalan keluar yang aman. |
 
 **Format:**
 
@@ -180,6 +183,7 @@ Berlaku kalau user menulis `MODE CEPAT`. Isian yang diberikan user selalu menang
 - **Warna** selalu diambil dari `C` (`C.bg`, `C.panel`, `C.text`, `C.muted`, `C.accent`, `C.accent2`, `C.good`). Jangan hardcode warna, supaya pergantian style tetap konsisten.
 - **Font:** `txt(..., {font:'body'})` untuk teks kecil atau sumber, default `head` untuk judul. Teks panjang beri `maxW` agar otomatis mengecil.
 - **Adegan** harus menutup 0..duration tanpa celah. `accent` adegan mewarnai cahaya latar.
+- **Adegan terakhir:** kosongkan area y 1140–1260. Area itu dipakai pil akun brand (`VIDEO.handle`, mis. @wanadiary) yang digambar otomatis oleh `composition.js`.
 - **EV (SFX)** dalam detik absolut:
   - `boom` [[t,kekuatan]]: dentuman + guncang, untuk hook atau fakta besar.
   - `hit`: pukulan kecil + flash, untuk pergantian poin.
@@ -239,6 +243,8 @@ Berlaku kalau user menulis `MODE CEPAT`. Isian yang diberikan user selalu menang
 - **Isi judul:** 3–6 kata, maksimal 3 baris, huruf kapital. Satu baris di-highlight dengan warna aksen (`THUMB.highlight` berisi teks baris yang persis sama).
 - **Subjudul:** maksimal sekitar 45 karakter. Ukuran teks menyesuaikan otomatis agar tidak terpotong.
 - Teks thumbnail tidak boleh sama persis dengan hook caption. Thumbnail menjanjikan hasil, hook memancing rasa penasaran.
+- **Akun brand** (`VIDEO.handle`) otomatis tampil di bawah subjudul (9:16) atau kiri bawah (16:9).
+- **Grid profil Instagram** memotong cover 9:16 menjadi 3:4 di tengah (y sekitar 240–1680). Judul, subjudul, dan handle harus berada di area itu. Layout A/B/C sudah memenuhi aturan ini; periksa ulang kalau mengubah layout.
 - Ukuran file thumbnail < 2 MB (dicek oleh `verify.py`).
 - Periksa dengan OCR (2.8 langkah 4) bahwa semua baris judul terbaca utuh dan tidak menempel ke tepi.
 
@@ -335,6 +341,7 @@ Buat struktur ini, lalu isi setiap file **persis** seperti blok di bawahnya:
 Contoh `scenes.js` dan `vo/lines.js` di bawah adalah demo 14 detik tentang pinjol. Demo ini dipakai saat menguji template. Pakai sebagai pola, lalu ganti seluruh isinya untuk topik baru.
 
 
+
 #### File: `config.js`
 
 ````js
@@ -345,6 +352,7 @@ window.VIDEO = {
   duration: 14,                         // detik; harus >= t1 baris VO terakhir + 0.05
   disclaimer: 'Konten edukasi, bukan saran keuangan.',
   disclaimerFrom: 11,                   // detik mulai disclaimer tampil (null = tidak tampil)
+  handle: '@wanadiary',                 // akun brand: tampil di adegan terakhir + thumbnail ('' = tidak tampil)
 };
 window.STYLE_ID = 'dark-alert';         // pilih salah satu key di STYLES
 
@@ -807,6 +815,18 @@ function loadExisting() {
   }
   const sumEnv = (t, list, decay, win = 0.7) => list.reduce((acc, [ti, s]) => (t >= ti && t - ti < win ? acc + s * Math.exp(-(t - ti) * decay) : acc), 0);
 
+  // pil akun brand (mis. @wanadiary); k = progres muncul, s = skala
+  function drawHandle(c, x, y, k, s) {
+    if (k <= 0) return;
+    const size = 40 * s, a = eOut(k);
+    c.save(); c.globalAlpha *= a;
+    c.font = `${S.bodyWeight} ${size}px BODY`;
+    const w = c.measureText(V.handle).width + size * 1.6, h = size * 1.7;
+    rrect(c, x - w / 2, y - h / 2 + (1 - a) * 20, w, h, h / 2, C.panel, C.accent, 3 * s);
+    c.restore();
+    txt(c, V.handle, x, y + 2 * s + (1 - a) * 20, { size, font: 'body', color: C.text, alpha: a });
+  }
+
   // gambar adegan (tanpa efek kamera) ke buffer; caption opsional
   function drawFrame(t, withCaptions = true) {
     if (!buf) init();
@@ -816,6 +836,7 @@ function loadExisting() {
     c.save(); scene.draw(c, t - scene.t0, t); c.restore();
     if (V.disclaimer && V.disclaimerFrom != null && t >= V.disclaimerFrom)
       txt(c, V.disclaimer, 540, 1560, { size: 26, font: 'body', color: C.muted, alpha: p(t, V.disclaimerFrom, V.disclaimerFrom + 0.4), maxW: 900 });
+    if (V.handle && scene === SCENES[SCENES.length - 1]) drawHandle(c, 540, 1205, p(t - scene.t0, 0.3, 0.6), 1);
     if (withCaptions) { c.save(); drawCaptions(c, t); c.restore(); }
     return scene;
   }
@@ -913,6 +934,13 @@ function loadExisting() {
       main.translate(ax, y + ss * 0.2); main.scale(k, k);
       main.lineJoin = 'round'; main.lineWidth = ss * 0.18; main.strokeStyle = TS.stroke; main.strokeText(T.sub, 0, 0);
       main.fillStyle = TS.textColor; main.fillText(T.sub, 0, 0); main.restore();
+      y += ss * 1.2;
+    }
+    // handle brand di bawah teks; 9:16 dijaga di dalam area potong grid profil IG 3:4 (y ≤ 0,86 h)
+    if (V.handle) {
+      const hs = land ? h / 720 : w / 1080, hy = land ? h * 0.88 : Math.min(y + 70 * hs, h * 0.86);
+      const hx = land ? box.x + 160 * hs : w / 2;
+      drawHandle(main, hx, hy, 1, hs);
     }
     if (T.badge) {
       const big = variant === 'B' && !land, bs = (land ? h * 0.075 : big ? h * 0.07 : h * 0.04);
