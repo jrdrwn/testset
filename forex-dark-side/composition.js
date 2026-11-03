@@ -482,7 +482,7 @@
   }
 
   // ---------- brand handle ----------
-  const HANDLE = '@wanadiary';
+  const HANDLE = '@wanadiary.id';
   // pil handle di outro; k = progres muncul
   function drawHandle(c, x, y, k) {
     if (k <= 0) return;

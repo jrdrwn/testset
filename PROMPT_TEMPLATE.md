@@ -40,7 +40,7 @@ TOPIK & TUJUAN
 - Nada                 : {tegas & memperingatkan | santai & ramah | serius & berita | bercerita}
 - CTA penutup          : {mis. "Kirim ini ke temanmu."}
 - Disclaimer di layar  : {mis. "Konten edukasi, bukan saran keuangan." | tidak ada}
-- Akun brand           : {default @wanadiary | handle lain | tidak ada}
+- Akun brand           : {default @wanadiary.id | handle lain | tidak ada}
 - Sumber data/angka    : {tautan/sumber; atau "cari sendiri dan cantumkan sumbernya"}
 
 FORMAT
@@ -95,8 +95,8 @@ Berlaku kalau user menulis `MODE CEPAT`. Isian yang diberikan user selalu menang
 | Sumber data | Wajib riset dengan web search. Pakai sumber resmi atau tepercaya (regulator, lembaga negara, jurnal, media besar). Setiap angka di layar diberi sumber singkat (teks kecil). Kalau angka tidak bisa diverifikasi, jangan pakai angka. Pakai pernyataan umum. |
 | Disclaimer | Topik keuangan/investasi: "Konten edukasi, bukan saran keuangan." Kesehatan: "Konten edukasi, bukan pengganti konsultasi dokter." Hukum: "Konten edukasi, bukan nasihat hukum." Lainnya: tanpa disclaimer. Tampil mulai detik ke-(durasi − 4). |
 | CTA | "Kirim ini ke temanmu." Kalau topiknya tips atau cara: "Simpan biar nggak lupa." |
-| Akun brand | `@wanadiary` (`VIDEO.handle`). Tampil otomatis sebagai watermark samar sepanjang video (`VIDEO.watermark`), sebagai pil di adegan terakhir, dan di semua thumbnail. Tidak perlu diucapkan di VO. |
-| Sudut pandang | Brand @wanadiary membahas **keresahan**: hal yang meresahkan, merugikan, atau jarang dibicarakan. Bingkai topik sebagai keresahan nyata yang dialami penonton, lalu beri jalan keluar yang aman. |
+| Akun brand | `@wanadiary.id` (`VIDEO.handle`). Tampil otomatis sebagai watermark samar sepanjang video (`VIDEO.watermark`), sebagai pil di adegan terakhir, dan di semua thumbnail. Tidak perlu diucapkan di VO. |
+| Sudut pandang | Brand @wanadiary.id membahas **keresahan**: hal yang meresahkan, merugikan, atau jarang dibicarakan. Bingkai topik sebagai keresahan nyata yang dialami penonton, lalu beri jalan keluar yang aman. |
 
 **Format:**
 
@@ -192,7 +192,7 @@ Berlaku kalau user menulis `MODE CEPAT`. Isian yang diberikan user selalu menang
 - **Warna** selalu diambil dari `C` (`C.bg`, `C.panel`, `C.text`, `C.muted`, `C.accent`, `C.accent2`, `C.good`). Jangan hardcode warna, supaya pergantian style tetap konsisten.
 - **Font:** `txt(..., {font:'body'})` untuk teks kecil atau sumber, default `head` untuk judul. Teks panjang beri `maxW` agar otomatis mengecil.
 - **Adegan** harus menutup 0..duration tanpa celah. `accent` adegan mewarnai cahaya latar.
-- **Adegan terakhir:** kosongkan area y 1140–1260. Area itu dipakai pil akun brand (`VIDEO.handle`, mis. @wanadiary) yang digambar otomatis oleh `composition.js`.
+- **Adegan terakhir:** kosongkan area y 1140–1260. Area itu dipakai pil akun brand (`VIDEO.handle`, mis. @wanadiary.id) yang digambar otomatis oleh `composition.js`.
 - **Watermark:** handle tampil samar (opacity 0,28, ukuran 30 px) di tengah y 1440 dari detik 0 sampai adegan terakhir, lalu memudar saat pil handle muncul. Watermark tidak ikut guncang, glitch, atau transisi. Jangan menaruh elemen adegan di y 1420–1460. Atur lewat `VIDEO.watermark` di `config.js` (`null` = tanpa watermark; opacity 0,2–0,35 masih tidak mengganggu).
 - **EV (SFX)** dalam detik absolut:
   - `boom` [[t,kekuatan]]: dentuman + guncang, untuk hook atau fakta besar.
@@ -332,10 +332,10 @@ Batas ini bisa berubah. Kalau ada web search, cek ulang sebelum menulis.
   - simpan (tips)
   - cerita di komentar (pengalaman)
 - **Disclaimer dan sumber data** ditulis sama dengan di video.
-- **Hashtag** di baris terakhir, maksimal 5. Komposisinya: 2 topik spesifik (mis. `#forex #tradingforex`), 2 kategori (mis. `#literasikeuangan #edukasikeuangan`), dan 1 brand (`#wanadiary`). Jangan pakai hashtag umum seperti `#fyp` atau `#viral`.
+- **Hashtag** di baris terakhir, maksimal 5. Komposisinya: 2 topik spesifik (mis. `#forex #tradingforex`), 2 kategori (mis. `#literasikeuangan #edukasikeuangan`), dan 1 brand (`#wanadiary`; hashtag tidak bisa memakai titik, jadi tanpa ".id"). Jangan pakai hashtag umum seperti `#fyp` atau `#viral`.
 - **Emoji:** maksimal 3 untuk seluruh caption, dan tidak di tengah kalimat.
 - **Bahasa:** sehari-hari, sapaan "kamu", tanpa huruf kapital semua.
-- **YouTube deskripsi** wajib memuat timestamp per adegan (`0:00 ...`) dari `SCENES[].t0`. Akhiri dengan "Follow @wanadiary untuk keresahan lainnya."
+- **YouTube deskripsi** wajib memuat timestamp per adegan (`0:00 ...`) dari `SCENES[].t0`. Akhiri dengan "Follow @wanadiary.id untuk keresahan lainnya."
 - **Komentar tersemat:** satu pertanyaan yang mengundang cerita, maksimal 300 karakter, tanpa hashtag.
 - **Alt text:** deskripsi visual video dalam 1–2 kalimat untuk aksesibilitas, tanpa hashtag.
 - **Cover:** tulis nama file thumbnail yang direkomendasikan beserta alasannya. Kalau tidak ada file thumbnail, tulis detik frame cover terbaik.
@@ -345,7 +345,7 @@ Batas ini bisa berubah. Kalau ada web search, cek ulang sebelum menulis.
 ````markdown
 # Caption upload: {Judul}
 
-Video: `{slug}-vo.mp4` ({durasi} dtk, 9:16) · Akun: @wanadiary
+Video: `{slug}-vo.mp4` ({durasi} dtk, 9:16) · Akun: @wanadiary.id
 **Cover:** `thumb-A-916.jpg` ({alasan})
 
 ## Instagram — Opsi 1 (angka mengejutkan, rekomendasi)
@@ -391,7 +391,7 @@ Video: `{slug}-vo.mp4` ({durasi} dtk, 9:16) · Akun: @wanadiary
 Isi video:
 0:00 ...
 {sumber, disclaimer}
-Follow @wanadiary untuk keresahan lainnya.
+Follow @wanadiary.id untuk keresahan lainnya.
 #... (maks 5)
 ```
 
@@ -452,6 +452,7 @@ Contoh `scenes.js` dan `vo/lines.js` di bawah adalah demo 14 detik tentang pinjo
 
 
 
+
 #### File: `config.js`
 
 ````js
@@ -462,7 +463,7 @@ window.VIDEO = {
   duration: 14,                         // detik; harus >= t1 baris VO terakhir + 0.05
   disclaimer: 'Konten edukasi, bukan saran keuangan.',
   disclaimerFrom: 11,                   // detik mulai disclaimer tampil (null = tidak tampil)
-  handle: '@wanadiary',                 // akun brand: tampil di adegan terakhir + thumbnail ('' = tidak tampil)
+  handle: '@wanadiary.id',                 // akun brand: tampil di adegan terakhir + thumbnail ('' = tidak tampil)
   watermark: { opacity: 0.28, size: 30, y: 1440 }, // handle samar sepanjang video (null = tanpa watermark)
 };
 window.STYLE_ID = 'dark-alert';         // pilih salah satu key di STYLES
@@ -926,7 +927,7 @@ function loadExisting() {
   }
   const sumEnv = (t, list, decay, win = 0.7) => list.reduce((acc, [ti, s]) => (t >= ti && t - ti < win ? acc + s * Math.exp(-(t - ti) * decay) : acc), 0);
 
-  // pil akun brand (mis. @wanadiary); k = progres muncul, s = skala
+  // pil akun brand (mis. @wanadiary.id); k = progres muncul, s = skala
   function drawHandle(c, x, y, k, s) {
     if (k <= 0) return;
     const size = 40 * s, a = eOut(k);

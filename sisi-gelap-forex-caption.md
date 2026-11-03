@@ -1,6 +1,6 @@
 # Caption upload: Sisi Gelap Trading Forex
 
-Video: `sisi-gelap-forex-vo.mp4` (55 dtk, 9:16) · Akun: @wanadiary
+Video: `sisi-gelap-forex-vo.mp4` (55 dtk, 9:16) · Akun: @wanadiary.id
 
 **Cover:** pilih frame di detik ±1,6, saat tulisan "7 DARI 10 · AKUN TRADER RETAIL · RUGI." tampil penuh. Video ini belum punya file thumbnail terpisah.
 
@@ -99,7 +99,7 @@ Cek legalitas broker: bappebti.go.id
 Data: pengungkapan risiko broker CFD (regulasi ESMA), 70–89% akun retail rugi.
 
 Konten edukasi, bukan ajakan atau saran investasi.
-Follow @wanadiary untuk keresahan lainnya.
+Follow @wanadiary.id untuk keresahan lainnya.
 
 #forex #literasikeuangan #edukasikeuangan
 ```

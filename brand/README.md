@@ -1,4 +1,4 @@
-# Brand @wanadiary
+# Brand @wanadiary.id
 
 ## Logo
 

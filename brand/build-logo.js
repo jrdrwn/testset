@@ -1,4 +1,4 @@
-// Membuat logo @wanadiary (SVG) dan export PNG lewat Chromium.
+// Membuat logo @wanadiary.id (SVG) dan export PNG lewat Chromium.
 // Pemakaian: node brand/build-logo.js   (env CHROME dan PW sama seperti render.js)
 // Konsep: monogram "w" geometris (garis tebal, ujung bulat) + titik merah "notifikasi" = keresahan yang perlu diperhatikan.
 const fs = require('fs'), path = require('path');
@@ -28,7 +28,7 @@ function wordmark(bg, fg, dot, sub) {
   <rect width="1600" height="480" fill="${bg}"/>
   <g transform="translate(70,67) scale(${s})"><rect width="1080" height="1080" rx="240" fill="${fg}"/>${mark(bg, dot)}</g>
   <text x="480" y="${sub ? 262 : 292}" font-family="WD" font-weight="800" font-size="150" letter-spacing="-2" fill="${fg}">wanadiary</text>
-  ${sub ? `<text x="486" y="352" font-family="WD" font-weight="600" font-size="52" letter-spacing="10" fill="${dot}">@WANADIARY</text>` : ''}
+  ${sub ? `<text x="486" y="352" font-family="WD" font-weight="600" font-size="52" letter-spacing="10" fill="${dot}">@WANADIARY.ID</text>` : ''}
 </svg>
 `;
 }
