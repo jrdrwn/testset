@@ -8,7 +8,7 @@ Pilih satu opsi Instagram. Caption TikTok dan YouTube Shorts sudah disesuaikan d
 
 ---
 
-## Instagram — Opsi 1 (angka mengejutkan, rekomendasi)
+## Instagram — Opsi 1 (angka mengejutkan)
 
 ```
 Modal sejuta bisa pegang posisi 500 juta. Kedengarannya enak, sampai harga gerak 0,2% ke arah sebaliknya. 😶
@@ -30,7 +30,7 @@ Data: pengungkapan risiko broker CFD (regulasi ESMA), 70–89% akun retail rugi.
 #forex #tradingforex #literasikeuangan #edukasikeuangan #wanadiary
 ```
 
-## Instagram — Opsi 2 (pertanyaan langsung)
+## Instagram — Opsi 2 (pertanyaan langsung, dipilih)
 
 ```
 7 dari 10 akun trader retail rugi. Yakin kamu bakal jadi 3 sisanya? 🤔
