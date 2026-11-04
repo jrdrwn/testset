@@ -1,0 +1,144 @@
+# Buat satu video Reels/TikTok dari judul saja, mengikuti PROMPT_TEMPLATE.md (Mode Cepat) dengan Kiro CLI headless.
+# Jalankan: tab Actions → "Buat video" → Run workflow → isi judul.
+# Secrets yang dibutuhkan (Settings → Secrets and variables → Actions):
+#   KIRO_API_KEY        (diawali ksk_, dari app.kiro.dev → Account → API Keys; butuh paket Pro/Pro+/Power)
+#   ELEVENLABS_API_KEY  (diawali sk_, izin Text to Speech + Speech to Text + Voices Read)
+name: Buat video
+
+on:
+  workflow_dispatch:
+    inputs:
+      judul:
+        description: 'Judul video (mis. "Sisi Gelap Pinjol")'
+        required: true
+        type: string
+      style:
+        description: Style visual
+        type: choice
+        default: otomatis
+        options: [otomatis, dark-alert, clean-explainer, neon-tech, bold-news, editorial-story]
+      voice:
+        description: Voice ElevenLabs
+        type: choice
+        default: otomatis
+        options: [otomatis, Liam, Brian, Daniel, Adam, Sarah, Matilda, Jessica]
+      durasi:
+        description: Durasi (detik)
+        type: choice
+        default: otomatis
+        options: [otomatis, '30', '45', '55', '60']
+      catatan:
+        description: Catatan tambahan (opsional, mis. "fokus ke mahasiswa")
+        required: false
+        type: string
+      model:
+        description: Model Kiro (opsional, kosong = default akun)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: buat-video-${{ github.run_id }}
+
+jobs:
+  video:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      PLAYWRIGHT_CORE_VERSION: 1.62.1
+    steps:
+      - name: Cek secrets
+        env:
+          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: |
+          [ -n "$KIRO_API_KEY" ] || { echo "::error::Secret KIRO_API_KEY belum diisi"; exit 1; }
+          [ -n "$ELEVENLABS_API_KEY" ] || { echo "::error::Secret ELEVENLABS_API_KEY belum diisi"; exit 1; }
+          case "$KIRO_API_KEY" in ksk_*) ;; *) echo "::warning::KIRO_API_KEY biasanya diawali ksk_";; esac
+          case "$ELEVENLABS_API_KEY" in sk_*) ;; *) echo "::error::ELEVENLABS_API_KEY harus diawali sk_ (bukan key ID)"; exit 1;; esac
+
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false   # agent tidak mendapat akses push; hanya langkah terakhir yang push
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Pasang ffmpeg, Chromium, Python tools, Kiro CLI
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg unzip
+          npm i --no-save --no-package-lock "playwright-core@$PLAYWRIGHT_CORE_VERSION"
+          npx playwright-core install --with-deps chromium
+          echo "CHROME=$(node -p "require('playwright-core').chromium.executablePath()")" >> "$GITHUB_ENV"
+          echo "PW=$GITHUB_WORKSPACE/node_modules/playwright-core" >> "$GITHUB_ENV"
+          echo "FFMPEG=$(command -v ffmpeg)" >> "$GITHUB_ENV"
+          python -m pip install -q elevenlabs rapidocr-onnxruntime opencv-python-headless
+          python -m pip uninstall -y -q opencv-python || true
+          python -m pip install -q --force-reinstall --no-deps opencv-python-headless
+          python -c "import cv2, rapidocr_onnxruntime, elevenlabs; print('python tools ok')"
+          curl -fsSL https://cli.kiro.dev/install | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Cek alat
+        run: |
+          kiro-cli --version
+          "$FFMPEG" -hide_banner -encoders | grep -E "libx264| aac " 
+          node -e "require(process.env.PW); console.log('chrome:', process.env.CHROME)"
+
+      - name: Susun prompt
+        env:
+          IN_JUDUL: ${{ inputs.judul }}
+          IN_STYLE: ${{ inputs.style }}
+          IN_VOICE: ${{ inputs.voice }}
+          IN_DURASI: ${{ inputs.durasi }}
+          IN_CATATAN: ${{ inputs.catatan }}
+        run: |
+          node .github/video/build-prompt.js > "$RUNNER_TEMP/prompt.txt"
+          cat "$RUNNER_TEMP/prompt.txt"
+
+      - name: Kiro membuat video (Mode Cepat)
+        env:
+          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          KIRO_MODEL: ${{ inputs.model }}
+        run: |
+          if [ -n "$KIRO_MODEL" ]; then kiro-cli settings chat.defaultModel "$KIRO_MODEL"; fi
+          kiro-cli chat --no-interactive --trust-all-tools "$(cat "$RUNNER_TEMP/prompt.txt")" 2>&1 | tee "$RUNNER_TEMP/kiro.log"
+
+      - name: Verifikasi ulang, commit, buka PR
+        id: final
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
+        run: bash .github/video/finalize.sh
+
+      - name: Simpan hasil sebagai artifact
+        if: steps.final.outputs.slug != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-${{ steps.final.outputs.slug }}
+          path: |
+            ${{ steps.final.outputs.slug }}-vo.mp4
+            ${{ steps.final.outputs.slug }}.mp4
+            ${{ steps.final.outputs.slug }}-thumb-*.jpg
+            ${{ steps.final.outputs.slug }}-caption.md
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Simpan log Kiro
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-kiro-${{ github.run_number }}
+          path: ${{ runner.temp }}/kiro.log
+          if-no-files-found: ignore
+          retention-days: 7

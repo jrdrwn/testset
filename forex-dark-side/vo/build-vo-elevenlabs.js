@@ -1,0 +1,97 @@
+// Generates vo/voice.js with ElevenLabs TTS, including per-caption-word timings
+// taken from the voice itself (so captions light up when each word is spoken).
+// Env: ELEVENLABS_API_KEY (required), VOICE_ID (default Liam), MODEL_ID,
+//      FFMPEG (optional; used only when a line is still too long at max speed).
+const { execFileSync } = require('child_process');
+const fs = require('fs'), path = require('path'), os = require('os');
+const { VO_LINES } = require('./lines.js');
+
+const KEY = process.env.ELEVENLABS_API_KEY;
+if (!KEY) { console.error('ELEVENLABS_API_KEY is not set'); process.exit(1); }
+const VOICE_ID = process.env.VOICE_ID || 'TX3LPaxmHKxFdv7VOQHJ'; // Liam
+const MODEL_ID = process.env.MODEL_ID || 'eleven_multilingual_v2';
+const FFMPEG = process.env.FFMPEG || '';
+const SR = 24000, MAX_SPEED = 1.2;
+
+// Spoken text split into units that map 1:1 onto the caption words (ln.cap.split(' ')).
+// `el` uses '|' between units; without `el`, the caption itself is spoken.
+function units(ln) {
+  const capWords = ln.cap.split(' ');
+  const u = ln.el ? ln.el.split('|').map(s => s.trim()) : capWords;
+  if (u.length !== capWords.length) throw new Error(`unit/caption word mismatch (${u.length} vs ${capWords.length}): ${ln.cap}`);
+  return u;
+}
+
+async function tts(text, speed) {
+  const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}/with-timestamps?output_format=pcm_${SR}`, {
+    method: 'POST',
+    headers: { 'xi-api-key': KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text, model_id: MODEL_ID,
+      voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true, speed },
+    }),
+  });
+  if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  const d = await res.json();
+  const b = Buffer.from(d.audio_base64, 'base64');
+  const pcm = new Int16Array(b.buffer.slice(b.byteOffset, b.byteOffset + (b.length & ~1)));
+  return { pcm, al: d.alignment };
+}
+
+// Trim leading/trailing silence; returns trimmed pcm and the offset (s) removed from the start.
+function trim(pcm) {
+  const th = 300, pad = Math.round(SR * 0.02);
+  let a = 0, b = pcm.length - 1;
+  while (a < b && Math.abs(pcm[a]) < th) a++;
+  while (b > a && Math.abs(pcm[b]) < th) b--;
+  const s = Math.max(0, a - pad);
+  return { pcm: pcm.slice(s, Math.min(pcm.length, b + pad)), off: s / SR };
+}
+
+// Time-stretch without pitch change (only used as a last resort).
+function atempo(pcm, ratio) {
+  const tin = path.join(os.tmpdir(), `vo-in-${process.pid}.raw`), tout = path.join(os.tmpdir(), `vo-out-${process.pid}.raw`);
+  fs.writeFileSync(tin, Buffer.from(pcm.buffer, pcm.byteOffset, pcm.byteLength));
+  execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-f', 's16le', '-ar', String(SR), '-ac', '1', '-i', tin, '-af', `atempo=${ratio.toFixed(4)}`, '-f', 's16le', tout]);
+  const b = fs.readFileSync(tout); fs.unlinkSync(tin); fs.unlinkSync(tout);
+  return new Int16Array(b.buffer.slice(b.byteOffset, b.byteOffset + (b.length & ~1)));
+}
+
+// ONLY=1,7 regenerates just those lines and keeps the rest of the existing vo/voice.js.
+function loadExisting() {
+  const src = fs.readFileSync(path.join(__dirname, 'voice.js'), 'utf8');
+  return JSON.parse(src.slice(src.indexOf('=') + 1).trim().replace(/;$/, ''));
+}
+
+(async () => {
+  const only = process.env.ONLY ? new Set(process.env.ONLY.split(',').map(Number)) : null;
+  const out = only ? loadExisting() : [];
+  for (const [i, ln] of VO_LINES.entries()) {
+    if (only && !only.has(i)) continue;
+    const u = units(ln), text = u.join(' ');
+    const starts = []; let pos = 0;
+    u.forEach(w => { starts.push(pos); pos += w.length + 1; });
+    const slot = (ln.t1 - ln.t0) * 0.97;
+
+    let speed = 1.0, r, t, dur;
+    for (let k = 0; k < 3; k++) {
+      r = await tts(text, speed); t = trim(r.pcm); dur = t.pcm.length / SR;
+      if (dur <= slot || speed >= MAX_SPEED) break;
+      speed = Math.min(MAX_SPEED, +(speed * (dur / slot) * 1.02).toFixed(3));
+    }
+    const chars = r.al.characters, cst = r.al.character_start_times_seconds;
+    if (chars.join('') !== text) throw new Error(`alignment text mismatch on line ${i}`);
+    let wt = starts.map(s => Math.max(0, cst[s] - t.off));
+
+    let pcm = t.pcm, stretch = 1;
+    if (dur > slot && FFMPEG) {
+      stretch = dur / (slot * 0.99); pcm = atempo(pcm, stretch);
+      wt = wt.map(x => x / stretch); dur = pcm.length / SR;
+    }
+    const fit = dur <= slot ? 'ok' : 'OVER';
+    console.log(`${String(i).padStart(2)} ${ln.t0.toFixed(2)}-${ln.t1.toFixed(2)} slot ${slot.toFixed(2)}s  vo ${dur.toFixed(2)}s  speed ${speed}${stretch > 1 ? ` atempo ${stretch.toFixed(2)}` : ''}  ${fit}  | ${text}`);
+    out[i] = ({ sr: SR, dur: +dur.toFixed(3), speed, wt: wt.map(x => +x.toFixed(3)), b64: Buffer.from(pcm.buffer, pcm.byteOffset, pcm.byteLength).toString('base64') });
+  }
+  fs.writeFileSync(path.join(__dirname, 'voice.js'), `// generated by build-vo-elevenlabs.js — ElevenLabs ${MODEL_ID}, voice ${VOICE_ID}\nwindow.VO_DATA = ${JSON.stringify(out)};\n`);
+  console.log('wrote vo/voice.js');
+})().catch(e => { console.error(e.message); process.exit(1); });

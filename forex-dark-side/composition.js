@@ -106,9 +106,13 @@
     kick: [3, 51.5, 0.6],
   };
   const CAPTIONS = window.VO_LINES.map((ln, li) => {
-    const words = ln.cap.split(' '), vd = (window.VO_DATA && window.VO_DATA[li]) ? window.VO_DATA[li].dur : (ln.t1 - ln.t0) * 0.85;
+    const vo = window.VO_DATA && window.VO_DATA[li];
+    const words = ln.cap.split(' '), vd = vo ? vo.dur : (ln.t1 - ln.t0) * 0.85;
     const total = ln.cap.length; let acc = 0;
-    const times = words.map(w => { const tt = ln.t0 + (acc / total) * vd; acc += w.length + 1; return tt; });
+    // word timings from the voice (ElevenLabs alignment) when available, else spread by character count
+    const times = vo && vo.wt && vo.wt.length === words.length
+      ? vo.wt.map(x => ln.t0 + x)
+      : words.map(w => { const tt = ln.t0 + (acc / total) * vd; acc += w.length + 1; return tt; });
     const groups = []; let g = [];
     words.forEach((w, i) => { g.push(i); if (g.length === 3 || /[.,?:!]$/.test(w)) { groups.push(g); g = []; } });
     if (g.length) groups.push(g);
@@ -473,7 +477,28 @@
     if (k2 > 0) txt(c, 'PINTAS KAYA.', 540, 875, { size: 145, weight: 900, color: C.yellow, scale: lerp(2, 1, eOut(k2)), alpha: clamp(k2 * 3), glow: 'rgba(255,214,10,.6)', blur: 35, stroke: '#000', sw: 12 });
     txt(c, 'Belajar dulu. Jangan cuma coba-coba.', 540, 1025, { size: 44, weight: 700, color: '#d5d9e2', alpha: p(lt, 1.3, 1.6) });
     txt(c, 'Konten edukasi, bukan ajakan atau saran investasi.', 540, 1225, { size: 26, weight: 500, color: C.grey, alpha: p(lt, 1.6, 1.9) });
+    drawHandle(c, 540, 1125, p(lt, 0.5, 0.8));
     c.restore();
+  }
+
+  // ---------- brand handle ----------
+  const HANDLE = '@wanadiary.id';
+  // pil handle di outro; k = progres muncul
+  function drawHandle(c, x, y, k) {
+    if (k <= 0) return;
+    const a = eOut(k);
+    c.save(); c.globalAlpha *= a;
+    c.font = '700 40px NS';
+    const w = c.measureText(HANDLE).width + 64, h = 68;
+    rrect(c, x - w / 2, y - h / 2 + (1 - a) * 20, w, h, h / 2, C.panel, C.red, 3);
+    c.restore();
+    txt(c, HANDLE, x, y + 2 + (1 - a) * 20, { size: 40, weight: 700, color: C.white, alpha: a });
+  }
+  // watermark samar sepanjang video; memudar saat pil outro tampil, kembali saat outro memudar ke loop
+  function drawWatermark(main, t) {
+    const out = SCENES.find(s => s.id === 'outro'), lt = t - out.t0;
+    const hide = lt >= 0 ? p(lt, 0.5, 0.8) * (1 - p(lt, 2.9, 3.4)) : 0;
+    if (hide < 1) txt(main, HANDLE, 540, 1440, { size: 30, weight: 700, ls: 2, color: C.white, alpha: 0.28 * (1 - hide) });
   }
 
   // ---------- captions ----------
@@ -532,7 +557,7 @@
     for (let y = -90 + off; y <= H; y += 90) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
     c.restore();
     c.save(); scene.draw(c, lt, t); c.restore();
-    c.save(); drawCaptions(c, t); c.restore();
+    if (!THUMB_MODE) { c.save(); drawCaptions(c, t); c.restore(); }
 
     // camera shake / punch
     const A = sumEnv(t, EV.boom.map(([a, s]) => [a, s * 1.3]), 9) + sumEnv(t, EV.hit, 10) + sumEnv(t, EV.stamp, 10);
@@ -570,6 +595,65 @@
     main.fillStyle = vg; main.fillRect(0, 0, W, H);
     main.save(); main.globalAlpha = 0.06; main.globalCompositeOperation = 'overlay';
     main.drawImage(noise[Math.floor(t * FPS) % 4], 0, 0, W, H); main.restore();
+    if (!THUMB_MODE) drawWatermark(main, t);
+  }
+
+  // ---------- thumbnail / cover (diambil dari template PROMPT_TEMPLATE.md) ----------
+  // renderThumb(ctx, 'A'|'B'|'C'); ukuran canvas bebas (1080x1920 cover, 1280x720 YouTube)
+  let THUMB_MODE = false;
+  const THUMB = {
+    bgTime: 14.5,                                   // adegan margin call: notifikasi merah + ekuitas anjlok
+    lines: ['SISI GELAP', 'TRADING FOREX'], highlight: ['TRADING FOREX'],
+    sub: '7 dari 10 akun trader retail rugi', badge: 'WASPADA', blur: 14,
+    overlay: 'rgba(6,7,10,0.62)', stroke: '#000', textColor: C.white, hl: C.yellow, badgeColor: C.red,
+  };
+  function renderThumb(main, variant = 'A') {
+    const T = THUMB, w = main.canvas.width, h = main.canvas.height, land = w > h;
+    const src = document.createElement('canvas'); src.width = W; src.height = H;
+    THUMB_MODE = true; render(src.getContext('2d'), T.bgTime); THUMB_MODE = false; // frame tanpa caption & watermark
+    const sc = Math.max(w / W, h / H), z = 1.06;
+    main.save(); main.fillStyle = C.bg; main.fillRect(0, 0, w, h);
+    main.filter = `blur(${Math.round(T.blur * sc)}px)`;
+    main.drawImage(src, (w - W * sc * z) / 2, (h - H * sc * z) / 2 + (land ? -H * sc * 0.08 : 0), W * sc * z, H * sc * z);
+    main.filter = 'none'; main.restore();
+    const g = land ? main.createLinearGradient(0, 0, w, 0) : main.createLinearGradient(0, 0, 0, h);
+    if (land) { g.addColorStop(0, T.overlay); g.addColorStop(0.62, T.overlay); g.addColorStop(1, 'rgba(0,0,0,0)'); }
+    else if (variant === 'C') { g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.45, 'rgba(0,0,0,0)'); g.addColorStop(0.62, T.overlay); g.addColorStop(1, T.overlay); }
+    else { g.addColorStop(0, T.overlay); g.addColorStop(1, T.overlay); }
+    main.fillStyle = g; main.fillRect(0, 0, w, h);
+    const box = land ? { x: w * 0.06, y: h * 0.14, w: w * 0.56, h: h * 0.72, align: 'left' }
+      : variant === 'B' ? { x: w * 0.08, y: h * 0.12, w: w * 0.84, h: h * 0.30, align: 'center' }
+      : variant === 'C' ? { x: w * 0.08, y: h * 0.58, w: w * 0.84, h: h * 0.24, align: 'center' }
+      : { x: w * 0.08, y: h * 0.28, w: w * 0.84, h: h * 0.34, align: 'center' };
+    const n = T.lines.length;
+    let size = Math.min(box.h / (n + (T.sub ? 0.9 : 0)) * 0.86, land ? 150 : 210);
+    main.save(); main.font = `900 ${size}px NS`;
+    const widest = Math.max(...T.lines.map(l => main.measureText(l).width));
+    if (widest > box.w) size *= box.w / widest;
+    main.restore();
+    const ax = box.align === 'left' ? box.x : box.x + box.w / 2;
+    let y = box.y + size * 0.6;
+    T.lines.forEach(l => {
+      const hl = T.highlight.includes(l);
+      main.save(); main.font = `900 ${size}px NS`; main.textAlign = box.align; main.textBaseline = 'middle';
+      main.lineJoin = 'round'; main.lineWidth = size * 0.12; main.strokeStyle = T.stroke; main.strokeText(l, ax, y);
+      if (hl) { main.shadowColor = T.hl; main.shadowBlur = size * 0.25; }
+      main.fillStyle = hl ? T.hl : T.textColor; main.fillText(l, ax, y); main.restore();
+      y += size * 1.02;
+    });
+    const ss = size * 0.34;
+    main.save(); main.font = `700 ${ss}px NS`; main.textAlign = box.align; main.textBaseline = 'middle';
+    const k = Math.min(1, box.w / main.measureText(T.sub).width);
+    main.translate(ax, y + ss * 0.2); main.scale(k, k);
+    main.lineJoin = 'round'; main.lineWidth = ss * 0.18; main.strokeStyle = T.stroke; main.strokeText(T.sub, 0, 0);
+    main.fillStyle = T.textColor; main.fillText(T.sub, 0, 0); main.restore();
+    y += ss * 1.2;
+    const big = variant === 'B' && !land, bs = land ? h * 0.075 : big ? h * 0.07 : h * 0.04;
+    const bx = land ? w * 0.80 : w / 2, by = land ? h * 0.18 : big ? h * 0.56 : box.y - bs * 1.4;
+    stamp(main, T.badge, bx, by, 1, { size: bs, color: T.badgeColor, rot: land ? 0.1 : -0.08 });
+    // handle brand; 9:16 dijaga di dalam area potong grid profil IG 3:4 (y ≤ 0,86 h)
+    const hs = land ? h / 720 : w / 1080, hy = land ? h * 0.88 : Math.min(y + 70 * hs, h * 0.86), hx = land ? box.x + 160 * hs : w / 2;
+    main.save(); main.translate(hx, hy); main.scale(hs, hs); drawHandle(main, 0, 0, 1); main.restore();
   }
 
   // ---------- audio (deterministic synthesis, 48 kHz stereo) ----------
@@ -636,8 +720,13 @@
           act[s0 + j] = 1;
         }
       });
+      // smoothing low-pass only for the low-rate espeak voice; full-band TTS passes through
+      const smooth = window.VO_DATA.some(d => d && d.sr <= 16000);
       let lp1 = 0, lp2 = 0, peak = 1e-6;
-      for (let i = 0; i < N; i++) { lp1 += 0.55 * (V[i] - lp1); lp2 += 0.55 * (lp1 - lp2); V[i] = lp2; peak = Math.max(peak, Math.abs(lp2)); }
+      for (let i = 0; i < N; i++) {
+        if (smooth) { lp1 += 0.55 * (V[i] - lp1); lp2 += 0.55 * (lp1 - lp2); V[i] = lp2; }
+        peak = Math.max(peak, Math.abs(V[i]));
+      }
       const vg = 0.95 / peak; let duck = 1;
       for (let i = 0; i < N; i++) {
         const target = act[Math.min(N - 1, i + Math.floor(sr * 0.04))] ? 0.38 : 1;
@@ -650,5 +739,5 @@
     return { sr, L, R: Rr };
   }
 
-  window.COMP = { W, H, FPS, DURATION, render, synthAudio };
+  window.COMP = { W, H, FPS, DURATION, render, renderThumb, synthAudio };
 })();
