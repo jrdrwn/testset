@@ -1,0 +1,674 @@
+[
+ {
+  "line": 0,
+  "cap": "Utang",
+  "say": "Utang",
+  "t": 0.1
+ },
+ {
+  "line": 0,
+  "cap": "paylater",
+  "say": "paylater",
+  "t": 0.414
+ },
+ {
+  "line": 0,
+  "cap": "kita",
+  "say": "kita",
+  "t": 0.75
+ },
+ {
+  "line": 0,
+  "cap": "hampir",
+  "say": "hampir",
+  "t": 0.971
+ },
+ {
+  "line": 0,
+  "cap": "Rp40",
+  "say": "empat puluh",
+  "t": 1.238
+ },
+ {
+  "line": 0,
+  "cap": "triliun.",
+  "say": "triliun.",
+  "t": 1.644
+ },
+ {
+  "line": 0,
+  "cap": "Kamu",
+  "say": "Kamu",
+  "t": 2.271
+ },
+ {
+  "line": 0,
+  "cap": "ikut?",
+  "say": "ikut?",
+  "t": 2.492
+ },
+ {
+  "line": 1,
+  "cap": "Rasanya",
+  "say": "Rasanya",
+  "t": 3.1
+ },
+ {
+  "line": 1,
+  "cap": "kayak",
+  "say": "kayak",
+  "t": 3.596
+ },
+ {
+  "line": 1,
+  "cap": "punya",
+  "say": "punya",
+  "t": 3.794
+ },
+ {
+  "line": 1,
+  "cap": "uang",
+  "say": "uang",
+  "t": 4.061
+ },
+ {
+  "line": 1,
+  "cap": "tambahan.",
+  "say": "tambahan.",
+  "t": 4.304
+ },
+ {
+  "line": 1,
+  "cap": "Padahal",
+  "say": "Padahal",
+  "t": 5.14
+ },
+ {
+  "line": 1,
+  "cap": "itu",
+  "say": "itu",
+  "t": 5.535
+ },
+ {
+  "line": 1,
+  "cap": "utang:",
+  "say": "utang:",
+  "t": 5.709
+ },
+ {
+  "line": 1,
+  "cap": "gaji",
+  "say": "gaji",
+  "t": 6.383
+ },
+ {
+  "line": 1,
+  "cap": "bulan",
+  "say": "bulan",
+  "t": 6.719
+ },
+ {
+  "line": 1,
+  "cap": "depan",
+  "say": "depan",
+  "t": 6.975
+ },
+ {
+  "line": 1,
+  "cap": "yang",
+  "say": "yang",
+  "t": 7.277
+ },
+ {
+  "line": 1,
+  "cap": "sudah",
+  "say": "sudah",
+  "t": 7.416
+ },
+ {
+  "line": 1,
+  "cap": "kepakai",
+  "say": "kepakai",
+  "t": 7.671
+ },
+ {
+  "line": 1,
+  "cap": "duluan.",
+  "say": "duluan.",
+  "t": 8.031
+ },
+ {
+  "line": 2,
+  "cap": "Satu",
+  "say": "Satu",
+  "t": 10.6
+ },
+ {
+  "line": 2,
+  "cap": "checkout",
+  "say": "checkout",
+  "t": 10.852
+ },
+ {
+  "line": 2,
+  "cap": "kecil",
+  "say": "kecil",
+  "t": 11.13
+ },
+ {
+  "line": 2,
+  "cap": "nggak",
+  "say": "nggak",
+  "t": 11.386
+ },
+ {
+  "line": 2,
+  "cap": "kerasa.",
+  "say": "kerasa.",
+  "t": 11.56
+ },
+ {
+  "line": 2,
+  "cap": "Tapi",
+  "say": "Tapi",
+  "t": 12.291
+ },
+ {
+  "line": 2,
+  "cap": "lima",
+  "say": "lima",
+  "t": 12.558
+ },
+ {
+  "line": 2,
+  "cap": "aplikasi,",
+  "say": "aplikasi,",
+  "t": 12.791
+ },
+ {
+  "line": 2,
+  "cap": "lima",
+  "say": "lima",
+  "t": 13.417
+ },
+ {
+  "line": 2,
+  "cap": "tanggal",
+  "say": "tanggal",
+  "t": 13.65
+ },
+ {
+  "line": 2,
+  "cap": "jatuh",
+  "say": "jatuh",
+  "t": 13.952
+ },
+ {
+  "line": 2,
+  "cap": "tempo.",
+  "say": "tempo.",
+  "t": 14.184
+ },
+ {
+  "line": 2,
+  "cap": "Gajimu",
+  "say": "Gajimu",
+  "t": 14.927
+ },
+ {
+  "line": 2,
+  "cap": "habis",
+  "say": "habis",
+  "t": 15.275
+ },
+ {
+  "line": 2,
+  "cap": "sebelum",
+  "say": "sebelum",
+  "t": 15.484
+ },
+ {
+  "line": 2,
+  "cap": "sempat",
+  "say": "sempat",
+  "t": 15.763
+ },
+ {
+  "line": 2,
+  "cap": "dipakai.",
+  "say": "dipakai.",
+  "t": 16.006
+ },
+ {
+  "line": 3,
+  "cap": "Telat",
+  "say": "Telat",
+  "t": 18.1
+ },
+ {
+  "line": 3,
+  "cap": "sehari,",
+  "say": "sehari,",
+  "t": 18.397
+ },
+ {
+  "line": 3,
+  "cap": "langsung",
+  "say": "langsung",
+  "t": 19.198
+ },
+ {
+  "line": 3,
+  "cap": "kena",
+  "say": "kena",
+  "t": 19.581
+ },
+ {
+  "line": 3,
+  "cap": "denda.",
+  "say": "denda.",
+  "t": 19.766
+ },
+ {
+  "line": 3,
+  "cap": "Bunga",
+  "say": "Bunga",
+  "t": 21.044
+ },
+ {
+  "line": 3,
+  "cap": "dan",
+  "say": "dan",
+  "t": 21.369
+ },
+ {
+  "line": 3,
+  "cap": "biaya",
+  "say": "biaya",
+  "t": 21.543
+ },
+ {
+  "line": 3,
+  "cap": "layanan",
+  "say": "layanan",
+  "t": 21.798
+ },
+ {
+  "line": 3,
+  "cap": "bikin",
+  "say": "bikin",
+  "t": 22.181
+ },
+ {
+  "line": 3,
+  "cap": "barangmu",
+  "say": "barangmu",
+  "t": 22.472
+ },
+ {
+  "line": 3,
+  "cap": "diam-diam",
+  "say": "diam-diam",
+  "t": 22.866
+ },
+ {
+  "line": 3,
+  "cap": "jauh",
+  "say": "jauh",
+  "t": 23.482
+ },
+ {
+  "line": 3,
+  "cap": "lebih",
+  "say": "lebih",
+  "t": 23.737
+ },
+ {
+  "line": 3,
+  "cap": "mahal.",
+  "say": "mahal.",
+  "t": 23.946
+ },
+ {
+  "line": 4,
+  "cap": "Semua",
+  "say": "Semua",
+  "t": 25.6
+ },
+ {
+  "line": 4,
+  "cap": "tercatat",
+  "say": "tercatat",
+  "t": 25.983
+ },
+ {
+  "line": 4,
+  "cap": "di",
+  "say": "di",
+  "t": 26.413
+ },
+ {
+  "line": 4,
+  "cap": "SLIK",
+  "say": "SLIK",
+  "t": 26.633
+ },
+ {
+  "line": 4,
+  "cap": "OJK.",
+  "say": "OJK.",
+  "t": 27.179
+ },
+ {
+  "line": 4,
+  "cap": "Telat",
+  "say": "Telat",
+  "t": 28.282
+ },
+ {
+  "line": 4,
+  "cap": "bayar",
+  "say": "bayar",
+  "t": 28.584
+ },
+ {
+  "line": 4,
+  "cap": "bisa",
+  "say": "bisa",
+  "t": 29.246
+ },
+ {
+  "line": 4,
+  "cap": "bikin",
+  "say": "bikin",
+  "t": 29.547
+ },
+ {
+  "line": 4,
+  "cap": "pengajuan",
+  "say": "pengajuan",
+  "t": 29.838
+ },
+ {
+  "line": 4,
+  "cap": "KPR",
+  "say": "KPR",
+  "t": 30.302
+ },
+ {
+  "line": 4,
+  "cap": "atau",
+  "say": "atau",
+  "t": 30.848
+ },
+ {
+  "line": 4,
+  "cap": "kreditmu",
+  "say": "kreditmu",
+  "t": 31.068
+ },
+ {
+  "line": 4,
+  "cap": "ditolak",
+  "say": "ditolak",
+  "t": 31.521
+ },
+ {
+  "line": 4,
+  "cap": "nanti.",
+  "say": "nanti.",
+  "t": 31.927
+ },
+ {
+  "line": 5,
+  "cap": "Banyak",
+  "say": "Banyak",
+  "t": 33.1
+ },
+ {
+  "line": 5,
+  "cap": "penelitian",
+  "say": "penelitian",
+  "t": 33.453
+ },
+ {
+  "line": 5,
+  "cap": "bilang,",
+  "say": "bilang,",
+  "t": 34.033
+ },
+ {
+  "line": 5,
+  "cap": "paylater",
+  "say": "paylater",
+  "t": 34.683
+ },
+ {
+  "line": 5,
+  "cap": "bikin",
+  "say": "bikin",
+  "t": 35.24
+ },
+ {
+  "line": 5,
+  "cap": "kita",
+  "say": "kita",
+  "t": 35.566
+ },
+ {
+  "line": 5,
+  "cap": "gampang",
+  "say": "gampang",
+  "t": 35.844
+ },
+ {
+  "line": 5,
+  "cap": "belanja",
+  "say": "belanja",
+  "t": 36.262
+ },
+ {
+  "line": 5,
+  "cap": "impulsif.",
+  "say": "impulsif.",
+  "t": 36.645
+ },
+ {
+  "line": 5,
+  "cap": "Diskon",
+  "say": "Diskon",
+  "t": 37.655
+ },
+ {
+  "line": 5,
+  "cap": "dikit,",
+  "say": "dikit,",
+  "t": 38.05
+ },
+ {
+  "line": 5,
+  "cap": "langsung",
+  "say": "langsung",
+  "t": 38.689
+ },
+ {
+  "line": 5,
+  "cap": "checkout.",
+  "say": "checkout.",
+  "t": 39.025
+ },
+ {
+  "line": 6,
+  "cap": "Kalau",
+  "say": "Kalau",
+  "t": 40.6
+ },
+ {
+  "line": 6,
+  "cap": "tetap",
+  "say": "tetap",
+  "t": 40.889
+ },
+ {
+  "line": 6,
+  "cap": "mau",
+  "say": "mau",
+  "t": 41.179
+ },
+ {
+  "line": 6,
+  "cap": "pakai:",
+  "say": "pakai.",
+  "t": 41.365
+ },
+ {
+  "line": 7,
+  "cap": "Cukup",
+  "say": "Cukup",
+  "t": 42
+ },
+ {
+  "line": 7,
+  "cap": "satu",
+  "say": "satu",
+  "t": 42.314
+ },
+ {
+  "line": 7,
+  "cap": "aplikasi.",
+  "say": "aplikasi.",
+  "t": 42.581
+ },
+ {
+  "line": 8,
+  "cap": "Total",
+  "say": "Total",
+  "t": 44.1
+ },
+ {
+  "line": 8,
+  "cap": "cicilan",
+  "say": "cicilan",
+  "t": 44.45
+ },
+ {
+  "line": 8,
+  "cap": "maksimal",
+  "say": "maksimal",
+  "t": 44.88
+ },
+ {
+  "line": 8,
+  "cap": "30%",
+  "say": "tiga puluh persen",
+  "t": 45.275
+ },
+ {
+  "line": 8,
+  "cap": "gaji.",
+  "say": "gaji.",
+  "t": 46.029
+ },
+ {
+  "line": 9,
+  "cap": "Bayar",
+  "say": "Bayar",
+  "t": 46.7
+ },
+ {
+  "line": 9,
+  "cap": "sebelum",
+  "say": "sebelum",
+  "t": 46.984
+ },
+ {
+  "line": 9,
+  "cap": "jatuh",
+  "say": "jatuh",
+  "t": 47.344
+ },
+ {
+  "line": 9,
+  "cap": "tempo.",
+  "say": "tempo.",
+  "t": 47.611
+ },
+ {
+  "line": 10,
+  "cap": "Cuma",
+  "say": "Cuma",
+  "t": 48.7
+ },
+ {
+  "line": 10,
+  "cap": "buat",
+  "say": "buat",
+  "t": 48.947
+ },
+ {
+  "line": 10,
+  "cap": "kebutuhan,",
+  "say": "kebutuhan,",
+  "t": 49.144
+ },
+ {
+  "line": 10,
+  "cap": "bukan",
+  "say": "bukan",
+  "t": 49.795
+ },
+ {
+  "line": 10,
+  "cap": "keinginan.",
+  "say": "keinginan.",
+  "t": 50.062
+ },
+ {
+  "line": 11,
+  "cap": "Paylater",
+  "say": "Paylater",
+  "t": 51
+ },
+ {
+  "line": 11,
+  "cap": "bukan",
+  "say": "bukan",
+  "t": 51.413
+ },
+ {
+  "line": 11,
+  "cap": "uang",
+  "say": "uang",
+  "t": 51.68
+ },
+ {
+  "line": 11,
+  "cap": "tambahan.",
+  "say": "tambahan.",
+  "t": 51.878
+ },
+ {
+  "line": 11,
+  "cap": "Kirim",
+  "say": "Kirim",
+  "t": 52.551
+ },
+ {
+  "line": 11,
+  "cap": "ini",
+  "say": "ini",
+  "t": 52.888
+ },
+ {
+  "line": 11,
+  "cap": "ke",
+  "say": "ke",
+  "t": 53.097
+ },
+ {
+  "line": 11,
+  "cap": "temanmu.",
+  "say": "temanmu.",
+  "t": 53.236
+ }
+]
