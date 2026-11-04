@@ -458,6 +458,7 @@ Contoh `scenes.js` dan `vo/lines.js` di bawah adalah demo 14 detik tentang pinjo
 
 
 
+
 #### File: `config.js`
 
 ````js
@@ -1318,7 +1319,7 @@ function finalize(raw, final) {
   const FF = process.env.FFMPEG;
   if (!FF) throw new Error('FFMPEG belum di-set: file tanpa finalisasi (audio Opus) akan ditolak TikTok. Lihat setup 2.7.');
   execFileSync(FF, ['-y', '-loglevel', 'error', '-i', raw,
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-maxrate', '15M', '-bufsize', '30M',
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-maxrate', '8M', '-bufsize', '16M',
     '-profile:v', 'high', '-level', '4.1', '-pix_fmt', 'yuv420p', '-r', '30', '-g', '60',
     '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '2',
     '-movflags', '+faststart', '-brand', 'mp42', final]);
